@@ -1,7 +1,7 @@
-import { auth, db, storage } from "./firebase-config.js";
+import { auth, db, storage } from "./firebase-config.js?v=2.2";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-import { SKILLS_DATABASE, ALL_SKILLS, CATEGORY_COLORS } from "./skills-db.js?v=2";
+import { SKILLS_DATABASE, ALL_SKILLS, CATEGORY_COLORS } from "./skills-db.js?v=2.2";
 
 /**
  * student-profile.js
