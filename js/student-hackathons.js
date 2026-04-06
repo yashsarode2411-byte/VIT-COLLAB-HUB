@@ -43,9 +43,9 @@ onAuthStateChanged(auth, async (user) => {
             if (studentRegCache) {
                 document.getElementById('leaderReg').value = studentRegCache;
             }
-            const firstName = data.name ? data.name.split(' ')[0] : "Student";
+            const fullName = data.name || "Student";
             const navUserName = document.getElementById('nav-user-name');
-            if (navUserName) navUserName.textContent = firstName;
+            if (navUserName) navUserName.textContent = fullName;
         }
     } catch(e) { console.error("Could not fetch user cache", e); }
 

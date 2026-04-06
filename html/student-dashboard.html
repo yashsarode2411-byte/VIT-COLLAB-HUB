@@ -26,21 +26,30 @@
     <header class="top-navbar">
         <a href="student-dashboard.html" class="nav-brand" style="text-decoration: none;">
             <img src="https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Vellore_Institute_of_Technology_seal_2017.svg/1200px-Vellore_Institute_of_Technology_seal_2017.svg.png"
-                alt="VIT Logo" class="nav-logo" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: white; padding: 2px;">
+                alt="VIT Logo" class="nav-logo"
+                style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: white; padding: 2px;">
             <span class="nav-title">VIT COLLAB HUB</span>
         </a>
 
         <!-- Center Name -->
         <div style="position: absolute; left: 50%; transform: translateX(-50%);">
-            <span id="nav-user-name" style="color: white; font-weight: 600; font-size: 15px; letter-spacing: 0.5px;">Loading...</span>
+            <span id="nav-user-name"
+                style="color: white; font-weight: 600; font-size: 15px; letter-spacing: 0.5px;">Loading...</span>
         </div>
 
         <div class="header-actions" style="display: flex; align-items: center; gap: 15px;">
-            <button class="notifications-btn" title="Notifications" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem; position: relative;">
+            <button id="themeToggleBtn" class="theme-toggle"
+                style="background: none; border: none; color: inherit; cursor: pointer; font-size: 1.2rem; margin-right: 15px;"
+                title="Toggle Dark Mode"><i class="fa-solid fa-moon"></i></button>
+            <button class="notifications-btn" title="Notifications"
+                style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem; position: relative;">
                 <i class="fa-regular fa-bell"></i>
-                <span class="badge" id="nav-notification-badge" style="position: absolute; top: -5px; right: -8px; background: var(--danger-msg); color: white; font-size: 0.65rem; padding: 2px 5px; border-radius: 10px; font-weight: bold;">3</span>
+                <span class="badge" id="nav-notification-badge"
+                    style="position: absolute; top: -5px; right: -8px; background: var(--danger-msg); color: white; font-size: 0.65rem; padding: 2px 5px; border-radius: 10px; font-weight: bold;">3</span>
             </button>
-            <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" alt="Student Avatar" id="nav-avatar" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; cursor: pointer;">
+            <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                alt="Student Avatar" id="nav-avatar"
+                style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; cursor: pointer;">
             <button id="logoutBtn" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
         </div>
     </header>
@@ -49,7 +58,9 @@
     <div class="sub-navbar">
         <div id="tab-dashboard" class="sub-nav-link active">
             <span class="icon-btn btn-blue nav-icon" style="pointer-events: none;">
-                <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                <svg viewBox="0 0 24 24">
+                    <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
+                </svg>
             </span>
             <span>Dashboard</span>
         </div>
@@ -60,14 +71,18 @@
             <span>Browse Members</span>
         </div>
         <div id="tab-hackathons" class="sub-nav-link" onclick="window.location.href='student-hackathons.html'">
-            <span class="icon-btn nav-icon" style="background-color: var(--success-msg); color: white; pointer-events: none;">
+            <span class="icon-btn nav-icon"
+                style="background-color: var(--success-msg); color: white; pointer-events: none;">
                 <i class="fa-solid fa-rocket"></i>
             </span>
             <span>Hackathons</span>
         </div>
         <div id="tab-profile" class="sub-nav-link" onclick="window.location.href='student-profile-setup.html'">
             <span class="icon-btn btn-indigo nav-icon" style="pointer-events: none;">
-                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
             </span>
             <span>Profile Settings</span>
         </div>
@@ -79,11 +94,12 @@
         <!-- Welcome Header -->
         <header class="dashboard-header">
             <div class="greeting-section">
-                <h1 id="welcomeMessage">Welcome back, Student! 👋</h1>
+                <h1 id="welcomeMessage">Welcome back, Student!</h1>
                 <p>Here's what's happening with your projects today.</p>
             </div>
             <div class="header-actions" style="display: flex; gap: 10px;">
-                <button class="btn btn-outline" id="joinProjectBtn" style="background: white; border-color: var(--primary-blue); color: var(--primary-blue);">
+                <button class="btn btn-outline" id="joinProjectBtn"
+                    style="background: white; border-color: var(--primary-blue); color: var(--primary-blue);">
                     <i class="fa-solid fa-right-to-bracket"></i> Join Project
                 </button>
                 <button class="btn btn-primary" id="createNewProjectBtn">
@@ -185,10 +201,15 @@
     </div>
 
     <!-- New Project Modal -->
-    <div id="newProjectModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 10002; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
-        <div class="card" style="width: 90%; max-width: 500px; padding: 30px; border-radius: 12px; position: relative; max-height: 90vh; overflow-y: auto;">
-            <button id="closeNewProjectModalBtn" style="position: absolute; right: 20px; top: 20px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-secondary);"><i class="fa-solid fa-xmark"></i></button>
-            <h2 style="font-size: 1.4rem; color: var(--text-primary); margin-bottom: 20px;"><i class="fa-solid fa-folder-plus text-gradient" style="margin-right: 10px;"></i> Create New Project</h2>
+    <div id="newProjectModal" class="modal-overlay" style="display: none; z-index: 10002;">
+        <div class="card glass-modal"
+            style="width: 90%; max-width: 500px; padding: 30px; border-radius: 12px; position: relative; max-height: 90vh; overflow-y: auto;">
+            <button id="closeNewProjectModalBtn"
+                style="position: absolute; right: 20px; top: 20px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-secondary);"><i
+                    class="fa-solid fa-xmark"></i></button>
+            <h2 style="font-size: 1.4rem; color: var(--text-primary); margin-bottom: 20px;"><i
+                    class="fa-solid fa-folder-plus text-gradient" style="margin-right: 10px;"></i> Create New Project
+            </h2>
             <form id="newProjectForm" style="display: flex; flex-direction: column; gap: 15px;">
                 <div class="form-group">
                     <label class="form-label">Project Title <span style="color: var(--danger);">*</span></label>
@@ -215,25 +236,34 @@
                     <!-- Dynamic member reg inputs will appear here -->
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Skills Required (Comma separated) <span style="color: var(--danger);">*</span></label>
-                    <input type="text" class="form-input" id="projSkills" placeholder="e.g. React, Node.js, AI" required>
+                    <label class="form-label">Skills Required (Comma separated) <span
+                            style="color: var(--danger);">*</span></label>
+                    <input type="text" class="form-input" id="projSkills" placeholder="e.g. React, Node.js, AI"
+                        required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Leader Registration Number <span style="color: var(--danger);">*</span></label>
+                    <label class="form-label">Leader Registration Number <span
+                            style="color: var(--danger);">*</span></label>
                     <input type="text" class="form-input" id="projLeaderReg" placeholder="e.g. 24BCE1000" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Project PPT / Presentation Link <span style="color: var(--danger);">*</span></label>
-                    <input type="url" class="form-input" id="projPptLink" placeholder="https://drive.google.com/..." required>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Paste a Google Drive, OneDrive, or any shareable link to your PPT.</p>
+                    <label class="form-label">Project PPT / Presentation Link <span
+                            style="color: var(--danger);">*</span></label>
+                    <input type="url" class="form-input" id="projPptLink" placeholder="https://drive.google.com/..."
+                        required>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Paste a Google Drive,
+                        OneDrive, or any shareable link to your PPT.</p>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Admin Email to Send Request <span style="color: var(--danger);">*</span></label>
+                    <label class="form-label">Admin Email to Send Request <span
+                            style="color: var(--danger);">*</span></label>
                     <input type="email" class="form-input" id="projAdminEmail" placeholder="admin@vit.ac.in" required>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Must be a valid registered admin.</p>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Must be a valid
+                        registered admin.</p>
                 </div>
-                
-                <button type="submit" class="btn btn-primary" id="submitProjectBtn" style="width: 100%; justify-content: center; margin-top: 10px;">
+
+                <button type="submit" class="btn btn-primary" id="submitProjectBtn"
+                    style="width: 100%; justify-content: center; margin-top: 10px;">
                     Send Request to Admin
                 </button>
             </form>
@@ -241,31 +271,43 @@
     </div>
 
     <!-- Join Project Modal -->
-    <div id="joinProjectModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 10002; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
-        <div class="card" style="width: 90%; max-width: 400px; padding: 30px; border-radius: 12px; position: relative;">
-            <button id="closeJoinProjectModalBtn" style="position: absolute; right: 20px; top: 20px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-secondary);"><i class="fa-solid fa-xmark"></i></button>
-            <h2 style="font-size: 1.4rem; color: var(--text-primary); margin-bottom: 20px;"><i class="fa-solid fa-right-to-bracket text-gradient" style="margin-right: 10px;"></i> Join a Project</h2>
+    <div id="joinProjectModal" class="modal-overlay" style="display: none; z-index: 10002;">
+        <div class="card glass-modal" style="width: 90%; max-width: 400px; padding: 30px; border-radius: 12px; position: relative;">
+            <button id="closeJoinProjectModalBtn"
+                style="position: absolute; right: 20px; top: 20px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-secondary);"><i
+                    class="fa-solid fa-xmark"></i></button>
+            <h2 style="font-size: 1.4rem; color: var(--text-primary); margin-bottom: 20px;"><i
+                    class="fa-solid fa-right-to-bracket text-gradient" style="margin-right: 10px;"></i> Join a Project
+            </h2>
             <form id="fetchProjectForm" style="display: flex; flex-direction: column; gap: 15px;">
                 <div class="form-group">
                     <label class="form-label">Unique Project Code <span style="color: var(--danger);">*</span></label>
-                    <input type="text" class="form-input" id="joinProjectCode" placeholder="Enter 6-char code" required style="text-transform: uppercase;">
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Ask your team leader for the code.</p>
+                    <input type="text" class="form-input" id="joinProjectCode" placeholder="Enter 6-char code" required
+                        style="text-transform: uppercase;">
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Ask your team leader
+                        for the code.</p>
                 </div>
-                <button type="submit" class="btn btn-primary" id="fetchProjectBtn" style="width: 100%; justify-content: center; margin-top: 10px;">
+                <button type="submit" class="btn btn-primary" id="fetchProjectBtn"
+                    style="width: 100%; justify-content: center; margin-top: 10px;">
                     Fetch Details
                 </button>
             </form>
 
-            <div id="projectDetailsCard" style="display: none; margin-top: 20px; padding: 15px; background: var(--card-bg); border: 2px dashed var(--border-color); border-radius: 8px;">
-                <h3 id="fetchedProjTitle" style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 5px;"></h3>
-                <p id="fetchedProjDesc" style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 15px;"></p>
-                <div style="font-size: 0.85rem; color: var(--text-primary); margin-bottom: 15px; display: flex; justify-content: space-between;">
+            <div id="projectDetailsCard"
+                style="display: none; margin-top: 20px; padding: 15px; background: var(--card-bg); border: 2px dashed var(--border-color); border-radius: 8px;">
+                <h3 id="fetchedProjTitle" style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 5px;">
+                </h3>
+                <p id="fetchedProjDesc" style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 15px;">
+                </p>
+                <div
+                    style="font-size: 0.85rem; color: var(--text-primary); margin-bottom: 15px; display: flex; justify-content: space-between;">
                     <span><strong>Leader:</strong> <span id="fetchedProjLeader"></span></span>
                     <span><strong>Slots:</strong> <span id="fetchedProjSlots"></span></span>
                 </div>
                 <form id="confirmJoinForm">
                     <input type="hidden" id="confirmedProjId">
-                    <button type="submit" class="btn btn-primary" id="confirmJoinBtn" style="width: 100%; justify-content: center; background: var(--success-msg); border-color: var(--success-msg);">
+                    <button type="submit" class="btn btn-primary" id="confirmJoinBtn"
+                        style="width: 100%; justify-content: center; background: var(--success-msg); border-color: var(--success-msg);">
                         Confirm Join
                     </button>
                 </form>
@@ -277,6 +319,7 @@
     <script type="module" src="../js/firebase-config.js"></script>
     <script type="module" src="../js/auth.js"></script>
     <script type="module" src="../js/student-dashboard.js?v=4"></script>
+    <script src="../js/theme.js"></script>
 </body>
 
 </html>

@@ -34,7 +34,8 @@ body {
     align-items: center;
     height: 48px;
     position: fixed;
-    top: 60px; /* Right below the 60px primary navbar */
+    top: 60px;
+    /* Right below the 60px primary navbar */
     width: 100%;
     z-index: 990;
     overflow-x: auto;
@@ -75,7 +76,8 @@ body {
 }
 
 .sub-nav-link.active {
-    background-color: #e9ecef; /* Light grey active tint */
+    background-color: #e9ecef;
+    /* Light grey active tint */
     border-bottom: 3px solid var(--primary-blue);
 }
 
@@ -103,10 +105,21 @@ body {
     fill: currentColor;
 }
 
-.btn-blue { background-color: #005bb5; }
-.btn-indigo { background-color: #55689b; }
-.btn-orange { background-color: #ad4800; }
-.btn-red { background-color: #c92a2a; }
+.btn-blue {
+    background-color: #005bb5;
+}
+
+.btn-indigo {
+    background-color: #55689b;
+}
+
+.btn-orange {
+    background-color: #ad4800;
+}
+
+.btn-red {
+    background-color: #c92a2a;
+}
 
 /* SHARED LOGOUT BUTTON */
 .btn-logout {
@@ -120,6 +133,7 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
 }
+
 .btn-logout:hover {
     background-color: #ffeaea;
     transform: translateY(-1px);
@@ -177,14 +191,15 @@ body {
 }
 
 .nav-link {
-    color: rgba(255,255,255,0.85);
+    color: rgba(255, 255, 255, 0.85);
     text-decoration: none;
     font-weight: 500;
     font-size: 14px;
     transition: color 0.3s;
 }
 
-.nav-link:hover, .nav-link.active {
+.nav-link:hover,
+.nav-link.active {
     color: white;
 }
 
@@ -216,7 +231,8 @@ body {
 
 .main-container {
     max-width: 1200px;
-    margin: 120px auto 30px; /* Offset for 108px dual fixed navbars */
+    margin: 120px auto 30px;
+    /* Offset for 108px dual fixed navbars */
     padding: 30px 20px;
 }
 
@@ -255,13 +271,16 @@ body {
     font-weight: 600;
     transition: background-color 0.3s;
 }
+
 .btn-submit:hover {
     background-color: var(--primary-blue-hover);
 }
+
 .btn-submit:disabled {
     background-color: var(--muted-text);
     cursor: not-allowed;
 }
+
 :root {
     --primary-blue: #0d6efd;
     --primary-blue-hover: #0b5ed7;
@@ -392,4 +411,348 @@ body {
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+}
+
+
+[data-theme="dark"] {
+    /* Main Backgrounds */
+    --bg-color: #0a0b10;
+    /* Obsidian black-blue */
+    --card-bg: #161b22;
+    /* Slate Grey-Blue card surface */
+    --sub-nav-bg: #0d1117;
+    /* Slightly darker than card for contrast */
+
+    /* Text Colors */
+    --text-primary: #f0f6fc;
+    /* Soft White (Off-white is easier on eyes) */
+    --text-secondary: #8b949e;
+    /* Muted Slate Gray */
+
+    /* Accents */
+    --primary-blue: #2f81f7;
+    /* Clean, formal Electric Blue */
+    --primary-blue-hover: #58a6ff;
+    --border-color: #30363d;
+    /* Subtle border for separation */
+
+    /* Status Badges */
+    --success: #3fb950;
+    --warning: #d29922;
+    --danger: #f85149;
+
+    /* Layout Overrides */
+    --nav-gradient: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+    --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+    /* Chat */
+    --chat-rec-bg: #21262d;
+    /* Received bubble — visible against Obsidian bg */
+
+    /* Aliases for some other variables used in the project */
+    --light-bg: #0a0b10;
+    --dark-text: #f0f6fc;
+}
+
+/* Removal of the blue grid pattern for a cleaner look */
+[data-theme="dark"] body {
+    background-image: none !important;
+    /* Simplifies the background for minimalism */
+}
+
+/* Soften the Glow: floating message button */
+[data-theme="dark"] #fabMessages {
+    box-shadow: 0 10px 25px rgba(47, 129, 247, 0.2) !important;
+}
+
+/* Subtle Card Separation */
+[data-theme="dark"] .card {
+    border: 1px solid var(--border-color) !important;
+    box-shadow: none !important;
+}
+
+/* Desaturate Accents for status badges */
+[data-theme="dark"] .status-ongoing {
+    background: rgba(63, 185, 80, 0.15) !important;
+}
+
+[data-theme="dark"] .status-pending {
+    background: rgba(210, 153, 34, 0.15) !important;
+}
+
+[data-theme="dark"] .status-info {
+    background: rgba(47, 129, 247, 0.15) !important;
+    color: var(--primary-blue) !important;
+}
+
+/* Sub-navbar Overrides for Dark Mode */
+[data-theme="dark"] .sub-navbar {
+    background-color: var(--sub-nav-bg) !important;
+    border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .sub-nav-link {
+    color: var(--text-secondary);
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .sub-nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .sub-nav-link.active {
+    background-color: rgba(47, 129, 247, 0.1) !important;
+    border-bottom: 3px solid var(--primary-blue) !important;
+    color: var(--primary-blue);
+}
+
+/* Dark Mode Overrides for Specific Buttons */
+[data-theme="dark"] .btn-logout {
+    background-color: var(--card-bg) !important;
+    color: var(--danger) !important;
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .btn-logout:hover {
+    background-color: rgba(248, 81, 73, 0.15) !important;
+}
+
+[data-theme="dark"] .btn-outline,
+[data-theme="dark"] #joinProjectBtn {
+    background-color: transparent !important;
+    border-color: var(--primary-blue) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .btn-outline:hover,
+[data-theme="dark"] #joinProjectBtn:hover {
+    background-color: rgba(47, 129, 247, 0.15) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Uniform Animations for Join Project & Outline Buttons */
+.btn-outline:hover,
+#joinProjectBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+}
+
+[data-theme="dark"] .btn-outline:hover,
+[data-theme="dark"] #joinProjectBtn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 5px 15px rgba(47, 129, 247, 0.3) !important;
+}
+
+/* Override previous hover background for logout button in dark mode */
+[data-theme="dark"] .btn-logout:hover {
+    background-color: var(--card-bg) !important;
+}
+
+/* Input Fields Dark Mode Stability */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-input,
+[data-theme="dark"] #skillInput {
+    background-color: var(--sub-nav-bg) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-input:focus,
+[data-theme="dark"] #skillInput:focus {
+    background-color: var(--card-bg) !important;
+    border-color: var(--primary-blue) !important;
+    box-shadow: 0 0 0 4px rgba(47, 129, 247, 0.2) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .form-control:disabled,
+[data-theme="dark"] .form-input:disabled {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-secondary) !important;
+}
+
+/* Date/Time input icons (calendar, clock) — visible in dark mode */
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="time"],
+[data-theme="dark"] input[type="datetime-local"] {
+    color-scheme: dark;
+}
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] input[type="time"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.8);
+    cursor: pointer;
+}
+
+/* Make date inputs open picker on full-width click */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+    cursor: pointer;
+}
+
+[data-theme="dark"] .skills-input-wrapper {
+    background-color: var(--sub-nav-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .skills-input-wrapper:focus-within {
+    background-color: var(--card-bg) !important;
+    border-color: var(--primary-blue) !important;
+}
+
+/* Skills Autocomplete Dark Mode Overrides */
+[data-theme="dark"] .skills-autocomplete {
+    background: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="dark"] .skills-autocomplete::-webkit-scrollbar-thumb {
+    background: var(--border-color) !important;
+}
+
+[data-theme="dark"] .skills-ac-item {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .skills-ac-item:hover,
+[data-theme="dark"] .skills-ac-item.highlighted {
+    background: rgba(47, 129, 247, 0.15) !important;
+    color: var(--primary-blue) !important;
+}
+
+[data-theme="dark"] .skills-ac-category {
+    color: var(--text-secondary) !important;
+    border-top-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .skills-ac-item.ac-added::after {
+    color: var(--success-msg) !important;
+}
+
+/* Global Dark Mode Scrollbar Styling */
+[data-theme="dark"] {
+    scrollbar-color: var(--border-color) var(--bg-color);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: var(--bg-color) !important;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: var(--border-color) !important;
+    border-radius: 4px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary) !important;
+}
+
+/* Ensure modal content in dark mode has correct track color if it differs from page bg */
+[data-theme="dark"] .modal-content::-webkit-scrollbar-track,
+[data-theme="dark"] .modal-body::-webkit-scrollbar-track {
+    background: var(--card-bg) !important;
+}
+
+/* Skills Autocomplete Global */
+.skills-autocomplete {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    max-height: 260px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    display: none;
+    animation: dropdownSlide 0.2s ease;
+}
+
+@keyframes dropdownSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.skills-autocomplete.visible {
+    display: block;
+}
+
+.skills-autocomplete::-webkit-scrollbar {
+    width: 6px;
+}
+
+.skills-autocomplete::-webkit-scrollbar-thumb {
+    background: #c4cdd5;
+    border-radius: 10px;
+}
+
+.skills-ac-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.15s ease;
+}
+
+.skills-ac-item:hover,
+.skills-ac-item.highlighted {
+    background: rgba(13, 110, 253, 0.08);
+    color: var(--primary-blue);
+}
+
+.skills-ac-item .ac-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+}
+
+.skills-ac-item .ac-match {
+    font-weight: 700;
+    color: var(--primary-blue);
+}
+
+.skills-ac-item .ac-rest {
+    font-weight: 400;
+}
+
+.skills-ac-category {
+    padding: 6px 16px 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    border-top: 1px solid var(--border-color);
+    pointer-events: none;
+}
+
+.skills-ac-category:first-child {
+    border-top: none;
 }

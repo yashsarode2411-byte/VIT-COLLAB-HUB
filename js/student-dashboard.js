@@ -310,9 +310,10 @@ onAuthStateChanged(auth, async (user) => {
             }
 
             // Update greeting
+            const fullName = currentUserData.name || "Student";
             const firstName = currentUserData.name ? currentUserData.name.split(' ')[0] : "Student";
-            document.getElementById('nav-user-name').textContent = firstName;
-            document.getElementById('welcomeMessage').innerHTML = `Welcome back, <span class="text-gradient">${firstName}</span>! 👋`;
+            document.getElementById('nav-user-name').textContent = fullName;
+            document.getElementById('welcomeMessage').innerHTML = `Welcome back, <span class="text-gradient">${firstName}</span>!`;
 
             // Setup UI bindings now that auth is ready
             setupUI();

@@ -82,10 +82,14 @@ async function loadProfile(uid) {
         const totalStars = data.total_stars || 0;
         const avgRating = totalReviews > 0
             ? (totalStars / totalReviews).toFixed(1)
-            : "New";
+            : "No Rating";
 
-        document.getElementById('heroRating').innerHTML =
-            `<i class="fa-solid fa-star" style="color: #f59e0b;"></i> ${avgRating}${avgRating !== "New" ? " / 5.0" : ""}`;
+        document.getElementById('statRating').textContent = avgRating;
+        if (avgRating === "No Rating") {
+            document.getElementById('heroRating').innerHTML = `No Rating`;
+        } else {
+            document.getElementById('heroRating').innerHTML = `<i class="fa-solid fa-star" style="color: #f59e0b;"></i> ${avgRating} / 5.0`;
+        }
 
         // ─── Stats ───
         document.getElementById('statRating').textContent = avgRating;

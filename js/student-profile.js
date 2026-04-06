@@ -1,6 +1,7 @@
 import { auth, db, storage } from "./firebase-config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { SKILLS_DATABASE, ALL_SKILLS, CATEGORY_COLORS } from "./skills-db.js?v=2";
 
 /**
  * student-profile.js
@@ -18,13 +19,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Event Listeners for UI
-    document.getElementById('profileForm').addEventListener('submit', (e) => handleProfileSave(e, auth.currentUser));
+    const pForm = document.getElementById('profileForm');
+    if (pForm) pForm.addEventListener('submit', (e) => handleProfileSave(e, auth.currentUser));
+    
     document.getElementById('skillInput')?.addEventListener('keydown', handleSkillTagEvent);
     initSkillAutocomplete();
 
     // Media Upload Listeners
-    document.getElementById('coverUploadInput').addEventListener('change', handleCoverUpload);
-    document.getElementById('avatarUploadInput').addEventListener('change', handleAvatarUpload);
+    const coverUpload = document.getElementById('coverUploadInput');
+    if (coverUpload) coverUpload.addEventListener('change', handleCoverUpload);
+    
+    const avatarUpload = document.getElementById('avatarUploadInput');
+    if (avatarUpload) avatarUpload.addEventListener('change', handleAvatarUpload);
 
     // Profile Dropdown Toggle
     const profileMenu = document.getElementById('profileMenu');
@@ -175,36 +181,53 @@ async function initProfile(user) {
             userData = { ...userData, ...docSnap.data() };
         }
 
-        // 1. Math Calculation on read
-        let avgRating = (userData.total_reviews > 0)
-            ? (userData.total_stars / userData.total_reviews).toFixed(1)
-            : "No Ratings";
+        // 1 & 2. Map profile strings safely
+        const dName = document.getElementById('display-name');
+        if (dName) dName.textContent = userData.name;
 
-        // 2. Populate UI Headers
-        document.getElementById('display-name').textContent = userData.name;
-        document.getElementById('nav-user-name').textContent = userData.name.split(' ')[0];
-        document.getElementById('profile-avatar').src = userData.avatar_url;
-        if (document.getElementById('nav-avatar')) {
-            document.getElementById('nav-avatar').src = userData.avatar_url;
+        const nName = document.getElementById('nav-user-name');
+        if (nName) nName.textContent = userData.name || "Student";
+
+        const pAvatar = document.getElementById('profile-avatar');
+        if (pAvatar) pAvatar.src = userData.avatar_url;
+
+        const nAvatar = document.getElementById('nav-avatar');
+        if (nAvatar) nAvatar.src = userData.avatar_url;
+
+        const dBranch = document.getElementById('display-branch');
+        if (dBranch) dBranch.innerHTML = `<i class="fa-solid fa-graduation-cap"></i> ${userData.branch || 'Add Branch'}`;
+        
+        const ratingBadge = document.getElementById('display-rating');
+        if (ratingBadge) {
+            if (userData.total_reviews && userData.total_reviews > 0) {
+                let avgRating = (userData.total_stars / userData.total_reviews).toFixed(1);
+                ratingBadge.style.display = 'inline-flex';
+                ratingBadge.innerHTML = `<i class="fa-solid fa-star"></i> ${avgRating} / 5.0 Rating`;
+            } else {
+                ratingBadge.style.display = 'inline-flex';
+                ratingBadge.innerHTML = `No Rating`;
+            }
         }
-        document.getElementById('display-branch').innerHTML = `<i class="fa-solid fa-graduation-cap"></i> ${userData.branch || 'Add Branch'}`;
-        document.getElementById('display-rating').innerHTML = `<i class="fa-solid fa-star"></i> ${avgRating} / 5.0 Rating`;
 
         if (userData.cover_url) {
-            document.getElementById('profileCover').style.backgroundImage = `linear-gradient(135deg, rgba(13,110,253,0.7) 0%, rgba(10,25,47,0.8) 100%), url('${userData.cover_url}')`;
+            const coverEl = document.getElementById('profileCover');
+            if (coverEl) coverEl.style.backgroundImage = `linear-gradient(135deg, rgba(13,110,253,0.7) 0%, rgba(10,25,47,0.8) 100%), url('${userData.cover_url}')`;
         }
 
-        // Stats
-        document.getElementById('stat-completed').textContent = userData.completed_projects;
-        document.getElementById('stat-reviews').textContent = userData.total_reviews;
+        // Stats (Safeguarded for pages that omit these elements)
+        const statCompletedEl = document.getElementById('stat-completed');
+        if (statCompletedEl) statCompletedEl.textContent = userData.completed_projects || 0;
+        
+        const statReviewsEl = document.getElementById('stat-reviews');
+        if (statReviewsEl) statReviewsEl.textContent = userData.total_reviews || 0;
 
-        // 3. Populate Form View
-        document.getElementById('input-name').value = userData.name;
-        document.getElementById('input-reg').value = userData.registration_number || '';
-        document.getElementById('input-branch').value = userData.branch || '';
-        if (userData.gender) document.getElementById('input-gender').value = userData.gender;
-        document.getElementById('input-block').value = userData.block || '';
-        document.getElementById('input-email').value = userData.email || '';
+        // 3. Populate Form View safely
+        if(document.getElementById('input-name')) document.getElementById('input-name').value = userData.name || '';
+        if(document.getElementById('input-reg')) document.getElementById('input-reg').value = userData.registration_number || '';
+        if(document.getElementById('input-branch')) document.getElementById('input-branch').value = userData.branch || '';
+        if(userData.gender && document.getElementById('input-gender')) document.getElementById('input-gender').value = userData.gender;
+        if(document.getElementById('input-block')) document.getElementById('input-block').value = userData.block || '';
+        if(document.getElementById('input-email')) document.getElementById('input-email').value = userData.email || '';
         if (document.getElementById('input-github')) {
             document.getElementById('input-github').value = userData.github || '';
         }
@@ -279,7 +302,7 @@ async function handleProfileSave(e, user) {
         // Display Header changes instantly
         document.getElementById('display-name').textContent = updatedData.name;
         document.getElementById('display-branch').innerHTML = `<i class="fa-solid fa-graduation-cap"></i> ${updatedData.branch}`;
-        document.getElementById('nav-user-name').textContent = updatedData.name.split(' ')[0];
+        document.getElementById('nav-user-name').textContent = updatedData.name || "Student";
         if (updatedData.avatar_url && document.getElementById('nav-avatar')) {
             document.getElementById('nav-avatar').src = updatedData.avatar_url;
         }
@@ -297,153 +320,8 @@ async function handleProfileSave(e, user) {
 }
 
 /**
- * ─────────────────────────────────────────────
- * COMPREHENSIVE SKILLS DATABASE (LinkedIn-style)
- * ─────────────────────────────────────────────
+ * Skill Autocomplete & Tag Management
  */
-const SKILLS_DATABASE = {
-    "Languages": [
-        "HTML", "HTML5", "CSS", "CSS3", "JavaScript", "TypeScript", "Python", "Java", "C", "C++",
-        "C#", "Go", "Golang", "Rust", "Ruby", "PHP", "Swift", "Kotlin", "Dart", "Scala",
-        "Perl", "R", "MATLAB", "Lua", "Haskell", "Elixir", "Erlang", "Clojure", "Julia",
-        "Shell Scripting", "Bash", "PowerShell", "Assembly", "VHDL", "Verilog", "SQL", "PL/SQL",
-        "Objective-C", "Groovy", "F#", "COBOL", "Fortran", "Solidity"
-    ],
-    "Frontend": [
-        "React", "React.js", "React Native", "Next.js", "Vue.js", "Vue 3", "Nuxt.js",
-        "Angular", "AngularJS", "Svelte", "SvelteKit", "Ember.js", "Gatsby", "Astro",
-        "jQuery", "Bootstrap", "Tailwind CSS", "Material UI", "Chakra UI", "Ant Design",
-        "Sass", "SCSS", "Less", "Styled Components", "CSS Modules", "PostCSS",
-        "Webpack", "Vite", "Parcel", "Rollup", "Babel", "ESLint", "Prettier",
-        "Redux", "Zustand", "MobX", "Recoil", "Pinia", "Vuex",
-        "Three.js", "D3.js", "Chart.js", "Framer Motion", "GSAP", "Lottie",
-        "Storybook", "Figma", "Adobe XD", "Sketch", "Responsive Design", "PWA",
-        "Web Accessibility", "SEO", "Web Performance", "Web Components"
-    ],
-    "Backend": [
-        "Node.js", "Express.js", "NestJS", "Fastify", "Koa", "Hapi",
-        "Django", "Flask", "FastAPI", "Tornado", "Pyramid",
-        "Spring Boot", "Spring Framework", "Hibernate", "JPA",
-        "Ruby on Rails", "Sinatra", "Laravel", "Symfony", "CodeIgniter",
-        "ASP.NET", "ASP.NET Core", ".NET", "Entity Framework",
-        "GraphQL", "Apollo", "REST API", "WebSocket", "gRPC", "tRPC",
-        "Microservices", "Serverless", "OAuth", "JWT", "API Design",
-        "Nginx", "Apache", "Caddy", "Load Balancing"
-    ],
-    "Database": [
-        "MySQL", "PostgreSQL", "MongoDB", "SQLite", "MariaDB", "Oracle DB",
-        "Microsoft SQL Server", "Redis", "Memcached", "Cassandra", "CouchDB",
-        "DynamoDB", "Firebase Firestore", "Firebase Realtime Database",
-        "Supabase", "PlanetScale", "Neo4j", "InfluxDB", "Elasticsearch",
-        "Prisma", "Sequelize", "Mongoose", "TypeORM", "Drizzle",
-        "Database Design", "Data Modeling", "SQL Optimization"
-    ],
-    "Cloud & DevOps": [
-        "AWS", "Amazon Web Services", "Azure", "Google Cloud Platform", "GCP",
-        "Firebase", "Heroku", "Vercel", "Netlify", "DigitalOcean", "Cloudflare",
-        "Docker", "Kubernetes", "Terraform", "Ansible", "Jenkins", "GitHub Actions",
-        "CI/CD", "GitLab CI", "CircleCI", "Travis CI", "ArgoCD",
-        "Linux", "Ubuntu", "CentOS", "DevOps", "SRE", "Infrastructure as Code",
-        "Prometheus", "Grafana", "ELK Stack", "Datadog", "New Relic",
-        "AWS Lambda", "AWS EC2", "AWS S3", "Azure Functions", "Cloud Functions"
-    ],
-    "Mobile": [
-        "Android Development", "iOS Development", "Flutter", "React Native",
-        "SwiftUI", "Jetpack Compose", "Xamarin", "Ionic", "Capacitor",
-        "Expo", "Mobile UI/UX", "App Store Optimization", "Push Notifications",
-        "ARKit", "ARCore", "Core Data", "Room Database", "Retrofit"
-    ],
-    "AI & ML": [
-        "Machine Learning", "Deep Learning", "Artificial Intelligence", "Neural Networks",
-        "TensorFlow", "PyTorch", "Keras", "Scikit-learn", "OpenCV",
-        "Natural Language Processing", "NLP", "Computer Vision", "Reinforcement Learning",
-        "Generative AI", "LLM", "GPT", "BERT", "Transformer Models",
-        "Pandas", "NumPy", "SciPy", "Matplotlib", "Seaborn", "Plotly",
-        "Hugging Face", "LangChain", "RAG", "Prompt Engineering",
-        "Data Science", "Data Analysis", "Feature Engineering", "Model Deployment",
-        "MLOps", "Jupyter Notebook", "Google Colab", "Kaggle"
-    ],
-    "Cybersecurity": [
-        "Cybersecurity", "Ethical Hacking", "Penetration Testing", "Network Security",
-        "OWASP", "Cryptography", "Encryption", "SSL/TLS", "Firewalls",
-        "Vulnerability Assessment", "Security Auditing", "SIEM", "SOC",
-        "Malware Analysis", "Reverse Engineering", "Bug Bounty",
-        "Information Security", "Identity Management", "Zero Trust"
-    ],
-    "Blockchain & Web3": [
-        "Blockchain", "Ethereum", "Solidity", "Smart Contracts", "Web3.js",
-        "Ethers.js", "Hardhat", "Truffle", "IPFS", "DeFi",
-        "NFT", "Cryptocurrency", "Hyperledger", "Polygon", "Solana",
-        "Consensus Algorithms", "Tokenization", "DAO", "Metaverse"
-    ],
-    "Tools & Platforms": [
-        "Git", "GitHub", "GitLab", "Bitbucket", "SVN",
-        "VS Code", "IntelliJ IDEA", "Eclipse", "Android Studio", "Xcode",
-        "Postman", "Insomnia", "Swagger", "Jira", "Trello", "Notion",
-        "Slack", "Microsoft Teams", "Confluence", "Figma",
-        "Linux CLI", "Vim", "Emacs", "Terminal", "WSL"
-    ],
-    "Data Engineering": [
-        "Apache Spark", "Apache Kafka", "Apache Airflow", "Apache Flink",
-        "Hadoop", "MapReduce", "Hive", "Pig", "ETL",
-        "Data Warehousing", "Data Pipelines", "Data Lake", "Big Data",
-        "Snowflake", "Databricks", "dbt", "Apache Beam"
-    ],
-    "Testing & QA": [
-        "Unit Testing", "Integration Testing", "End-to-End Testing",
-        "Jest", "Mocha", "Chai", "Cypress", "Selenium", "Playwright",
-        "JUnit", "TestNG", "pytest", "Robot Framework",
-        "Test Driven Development", "TDD", "BDD", "Load Testing",
-        "Performance Testing", "API Testing", "Manual Testing", "QA Automation"
-    ],
-    "Design & UX": [
-        "UI Design", "UX Design", "UI/UX", "User Research", "Wireframing",
-        "Prototyping", "Design Thinking", "Figma", "Adobe XD", "Sketch",
-        "Adobe Photoshop", "Adobe Illustrator", "Adobe After Effects",
-        "Canva", "Blender", "3D Modeling", "Motion Graphics",
-        "Typography", "Color Theory", "Interaction Design", "Design Systems"
-    ],
-    "Soft Skills": [
-        "Problem Solving", "Critical Thinking", "Communication", "Teamwork",
-        "Leadership", "Time Management", "Agile", "Scrum", "Kanban",
-        "Project Management", "Public Speaking", "Technical Writing",
-        "Mentoring", "Collaboration", "Adaptability", "Creativity"
-    ],
-    "IoT & Embedded": [
-        "IoT", "Internet of Things", "Arduino", "Raspberry Pi", "ESP32", "ESP8266",
-        "Embedded Systems", "Embedded C", "RTOS", "Microcontrollers",
-        "Sensor Integration", "MQTT", "Zigbee", "LoRa", "BLE",
-        "PCB Design", "Circuit Design", "Signal Processing", "Robotics",
-        "ROS", "Drone Programming", "PLC Programming"
-    ]
-};
-
-// Flatten the skills database for quick searching
-const ALL_SKILLS = [];
-for (const [category, skills] of Object.entries(SKILLS_DATABASE)) {
-    for (const skill of skills) {
-        ALL_SKILLS.push({ name: skill, category });
-    }
-}
-
-// Category color map for icons
-const CATEGORY_COLORS = {
-    "Languages": "#e11d48",
-    "Frontend": "#2563eb",
-    "Backend": "#16a34a",
-    "Database": "#d97706",
-    "Cloud & DevOps": "#7c3aed",
-    "Mobile": "#06b6d4",
-    "AI & ML": "#ec4899",
-    "Cybersecurity": "#dc2626",
-    "Blockchain & Web3": "#8b5cf6",
-    "Tools & Platforms": "#64748b",
-    "Data Engineering": "#0891b2",
-    "Testing & QA": "#65a30d",
-    "Design & UX": "#f43f5e",
-    "Soft Skills": "#0ea5e9",
-    "IoT & Embedded": "#059669"
-};
 
 let acHighlightIndex = -1;
 let acFilteredItems = [];
