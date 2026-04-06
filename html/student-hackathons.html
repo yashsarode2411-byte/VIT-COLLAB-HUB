@@ -193,6 +193,46 @@
         </div>
     </div>
 
+    <!-- Join Hackathon Team Modal -->
+    <div id="joinHackTeamModal" class="modal-overlay" style="display: none; z-index: 10002;">
+        <div class="card glass-modal" style="background: var(--card-bg); width: 90%; max-width: 400px; padding: 30px; border-radius: 12px; position: relative;">
+            <button onclick="document.getElementById('joinHackTeamModal').style.display='none'"
+                style="position: absolute; right: 20px; top: 20px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-secondary);"><i
+                    class="fa-solid fa-xmark"></i></button>
+            <h2 style="font-size: 1.4rem; color: var(--text-primary); margin-bottom: 20px;"><i
+                    class="fa-solid fa-right-to-bracket text-gradient" style="margin-right: 10px;"></i> Join Team
+            </h2>
+            <form id="fetchHackTeamForm" style="display: flex; flex-direction: column; gap: 15px;">
+                <div class="form-group">
+                    <label class="form-label">Unique Team Code <span style="color: var(--danger-msg);">*</span></label>
+                    <input type="text" class="form-input" id="joinTeamCodeInput" placeholder="Enter 6-char code" required
+                        style="text-transform: uppercase;">
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Ask your team leader
+                        for the 6-character code.</p>
+                </div>
+                <button type="submit" class="btn btn-primary" id="fetchHackTeamBtn"
+                    style="width: 100%; justify-content: center; margin-top: 10px;">
+                    Verify Team
+                </button>
+            </form>
+
+            <div id="hackTeamDetailsCard"
+                style="display: none; margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.02); border: 2px dashed var(--border-color); border-radius: 8px;">
+                <h3 id="fetchedHackTeamTitle" style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 5px;">
+                </h3>
+                <p id="fetchedHackTeamHackName" style="color: var(--primary-blue); font-size: 0.85rem; font-weight: 600; margin-bottom: 15px;">
+                </p>
+                <form id="confirmHackTeamJoinForm">
+                    <input type="hidden" id="confirmedTeamCode">
+                    <button type="submit" class="btn btn-primary" id="confirmHackTeamJoinBtn"
+                        style="width: 100%; justify-content: center; background: var(--success-msg); border-color: var(--success-msg);">
+                        Confirm Join
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main class="main-container" style="padding-top: 40px;">
         <div class="page-header">
@@ -204,10 +244,15 @@
                     <button class="btn btn-outline filter-btn" data-filter="upcoming">Upcoming</button>
                     <button class="btn btn-outline filter-btn" data-filter="completed">Concluded</button>
                 </div>
-                <button class="btn btn-outline" onclick="window.openJoinTeamModal()" style="border-color: var(--primary-blue); color: var(--primary-blue);">
+                <button class="btn btn-outline join-team-code-btn" onclick="openJoinTeamModalUI()">
                     <i class="fa-solid fa-user-plus" style="margin-right: 6px;"></i>Join Team by Code
                 </button>
             </div>
+            <style>
+                .join-team-code-btn { border-color: var(--primary-blue); color: var(--primary-blue); }
+                .join-team-code-btn:hover { background-color: var(--primary-blue) !important; color: white !important; }
+                .filter-btn.btn-outline:hover { background-color: var(--primary-blue) !important; color: white !important; }
+            </style>
         </div>
 
         <div id="hackathons-container" class="hackathon-grid">

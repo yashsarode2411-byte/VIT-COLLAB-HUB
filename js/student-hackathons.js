@@ -350,15 +350,77 @@ logoutBtn.addEventListener('click', () => {
     });
 });
 
-// ─── Join Hackathon Team by Invite Code ───
-window.openJoinTeamModal = () => {
-    const code = prompt("Enter the 6-digit Team Invite Code:");
-    if (!code || code.trim().length !== 6) {
-        if (code !== null) alert("Please enter a valid 6-character invite code.");
-        return;
-    }
-    joinTeamByCode(code.trim().toUpperCase());
+// ─── Join Hackathon Team by Invite Code UI ───
+window.openJoinTeamModalUI = () => {
+    document.getElementById('joinTeamCodeInput').value = '';
+    document.getElementById('hackTeamDetailsCard').style.display = 'none';
+    document.getElementById('joinHackTeamModal').style.display = 'flex';
 };
+
+document.getElementById('fetchHackTeamForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const code = document.getElementById('joinTeamCodeInput').value.trim().toUpperCase();
+    if(code.length !== 6) return alert("Code must be 6 characters");
+    
+    const btn = document.getElementById('fetchHackTeamBtn');
+    btn.textContent = "Verifying...";
+    btn.disabled = true;
+
+    try {
+        const q = query(collection(db, "hackathon_applications"), where("invite_code", "==", code));
+        const snap = await getDocs(q);
+        
+        if (snap.empty) {
+            alert("No team found with this invite code. Please check and try again.");
+            return;
+        }
+        
+        const teamData = snap.docs[0].data();
+        const uid = auth.currentUser.uid;
+        
+        if (teamData.team_members && teamData.team_members.includes(uid)) {
+            alert("You are already a member of this team!");
+            return;
+        }
+        
+        if (myApplications[teamData.hackathon_id]) {
+            alert("You have already applied to this hackathon with a different team.");
+            return;
+        }
+        
+        let hackName = "Unknown Hackathon";
+        try {
+            const hSnap = await getDoc(doc(db, "hackathons", teamData.hackathon_id));
+            if(hSnap.exists()) hackName = hSnap.data().name;
+        } catch(err){}
+
+        document.getElementById('fetchedHackTeamTitle').textContent = `Team: ${teamData.team_name}`;
+        document.getElementById('fetchedHackTeamHackName').textContent = `Event: ${hackName}`;
+        document.getElementById('confirmedTeamCode').value = code;
+        
+        document.getElementById('hackTeamDetailsCard').style.display = 'block';
+        
+    } catch(err) {
+        console.error(err);
+        alert("Failed to verify team code.");
+    } finally {
+        btn.textContent = "Verify Team";
+        btn.disabled = false;
+    }
+});
+
+document.getElementById('confirmHackTeamJoinForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const code = document.getElementById('confirmedTeamCode').value;
+    const btn = document.getElementById('confirmHackTeamJoinBtn');
+    btn.textContent = "Joining...";
+    btn.disabled = true;
+    
+    await joinTeamByCode(code);
+    document.getElementById('joinHackTeamModal').style.display = 'none';
+    btn.textContent = "Confirm Join";
+    btn.disabled = false;
+});
 
 async function joinTeamByCode(code) {
     try {
@@ -385,8 +447,6 @@ async function joinTeamByCode(code) {
             alert("You have already applied to this hackathon with a different team. You cannot join another team.");
             return;
         }
-        
-        if (!confirm(`Join team "${teamData.team_name}" for this hackathon?`)) return;
         
         // Add user to the team
         await updateDoc(doc(db, "hackathon_applications", teamDoc.id), {

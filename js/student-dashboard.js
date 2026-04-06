@@ -572,13 +572,17 @@ async function fetchMyHackathons(uid) {
                         <span style="background: ${st.bg}; color: ${st.color}; font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 700;">${st.text}</span>
                     </div>
                     <p style="font-size: 13px; color: var(--muted-text); margin: 8px 0; line-height: 1.4;">${hackDesc.substring(0, 80)}${hackDesc.length > 80 ? '...' : ''}</p>
-                    <div class="project-tech-stack">
+                    <div class="project-tech-stack" style="gap: 8px; flex-wrap: wrap;">
                         <span class="tech-badge" style="background: rgba(13,110,253,0.08); color: var(--primary-blue);">
                             <i class="fa-solid fa-users" style="margin-right: 4px;"></i>${appData.team_name || 'Your Team'}
                         </span>
                         <span class="tech-badge" style="background: rgba(16,185,129,0.08); color: #10b981;">
                             Round ${appData.current_round || 0}
                         </span>
+                        ${appData.invite_code ? `
+                        <span class="tech-badge" title="Click to Copy" style="background: rgba(245,158,11,0.08); color: #d97706; cursor: pointer; border: 1px dashed rgba(245,158,11,0.4);" onclick="navigator.clipboard.writeText('${appData.invite_code}'); alert('Copied invite code: ${appData.invite_code}');">
+                            <i class="fa-solid fa-key" style="margin-right: 4px;"></i>Code: <strong style="letter-spacing: 1px;">${appData.invite_code}</strong>
+                        </span>` : ''}
                     </div>
                 </div>
                 <div class="project-actions" style="display: flex; gap: 10px; padding: 15px 20px; border-top: 1px solid var(--border-color);">
