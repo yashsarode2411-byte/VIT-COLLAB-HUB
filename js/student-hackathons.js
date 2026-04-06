@@ -64,7 +64,7 @@ onAuthStateChanged(auth, async (user) => {
 
 async function loadMyApplications(uid) {
     try {
-        const q = query(collection(db, "hackathon_applications"), where("applicant_uid", "==", uid));
+        const q = query(collection(db, "hackathon_applications"), where("team_members", "array-contains", uid));
         const snap = await getDocs(q);
         myApplications = {};
         snap.forEach(docSnap => {

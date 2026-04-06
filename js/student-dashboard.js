@@ -517,7 +517,7 @@ async function fetchMyHackathons(uid) {
     if (!container) return;
     
     try {
-        const q = query(collection(db, "hackathon_applications"), where("applicant_uid", "==", uid));
+        const q = query(collection(db, "hackathon_applications"), where("team_members", "array-contains", uid));
         const appSnap = await getDocs(q);
         
         if (appSnap.empty) {

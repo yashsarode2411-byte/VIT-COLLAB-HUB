@@ -93,7 +93,7 @@ onAuthStateChanged(auth, async (user) => {
         const appQuery = query(
             collection(db, "hackathon_applications"),
             where("hackathon_id", "==", hackathonId),
-            where("applicant_uid", "==", user.uid)
+            where("team_members", "array-contains", user.uid)
         );
         const appSnap = await getDocs(appQuery);
 

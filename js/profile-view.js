@@ -138,11 +138,11 @@ async function loadProfile(uid) {
         let allUserHackApps = []; // all hackathon apps this user is part of
         try {
             // 1. Apps where user is the leader
-            const leaderQuery = query(
+            const hackQuery = query(
                 collection(db, "hackathon_applications"),
-                where("applicant_uid", "==", uid)
+                where("team_members", "array-contains", uid)
             );
-            const leaderSnap = await getDocs(leaderQuery);
+            const leaderSnap = await getDocs(hackQuery);
             leaderSnap.forEach(d => {
                 allUserHackApps.push({ id: d.id, ...d.data() });
             });
