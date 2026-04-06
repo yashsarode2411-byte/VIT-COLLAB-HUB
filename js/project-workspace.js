@@ -608,6 +608,31 @@ document.getElementById('delete-project-btn').addEventListener('click', async ()
     btn.disabled = true;
 
     try {
+        if (currentProjectData && currentProjectData.mentor_id) {
+            await updateDoc(doc(db, "projects", projectId), {
+                deletion_requested: true,
+                deletion_requested_by: currentUserUid || 'unknown'
+            });
+            alert("A mentor is actively assigned to this project. A deletion request has been sent to them for approval.");
+            btn.textContent = "Request Sent";
+            return;
+        }
+        // Attempt to delete subcollections (fails silently to prevent blocking main deletion)
+        try {
+            const subcollections = ['tasks', 'submissions', 'messages'];
+            for (const sub of subcollections) {
+                const snap = await getDocs(collection(db, "projects", projectId, sub));
+                const promises = [];
+                snap.forEach(docSnap => promises.push(deleteDoc(doc(db, "projects", projectId, sub, docSnap.id))));
+                await Promise.all(promises);
+            }
+        } catch(e) {
+            console.warn("Could not delete some subcollections (likely permission rules). Orphaning data attached to deleted project.", e);
+        }
+
+        // Delete project document first so if rules block it, metrics aren't falsely rolled back
+        await deleteDoc(doc(db, "projects", projectId));
+
         // If project was completed, reverse the ratings from team members
         if (currentProjectData && currentProjectData.status === 'completed') {
             const teamMembers = currentProjectData.team_members || [];
@@ -629,17 +654,6 @@ document.getElementById('delete-project-btn').addEventListener('click', async ()
             }
         }
 
-        // Delete subcollections
-        const subcollections = ['tasks', 'submissions', 'messages'];
-        for (const sub of subcollections) {
-            const snap = await getDocs(collection(db, "projects", projectId, sub));
-            const promises = [];
-            snap.forEach(docSnap => promises.push(deleteDoc(doc(db, "projects", projectId, sub, docSnap.id))));
-            await Promise.all(promises);
-        }
-
-        // Delete project document
-        await deleteDoc(doc(db, "projects", projectId));
         alert("Project deleted successfully.");
         window.location.href = currentUserRole === 'admin' ? 'admin-dashboard.html' : 'student-dashboard.html';
     } catch (e) {

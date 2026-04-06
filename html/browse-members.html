@@ -487,14 +487,29 @@
             </div>
         </div>
 
-        <!-- Members Grid -->
-        <div class="members-grid" id="membersGrid">
-            <!-- Simulated Loader Cards initially -->
+        <!-- Segmented Role Toggle -->
+        <div class="role-toggle-container" style="display: flex; justify-content: center; margin: 20px 0 30px;">
+            <div class="segmented-control" style="background: rgba(13, 110, 253, 0.08); padding: 5px; border-radius: 12px; display: inline-flex; gap: 5px; border: 1px solid rgba(13, 110, 253, 0.15);">
+                <button id="toggleStudentBtn" class="role-btn active" style="padding: 10px 25px; border: none; background: var(--primary-blue); color: white; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.3s ease;">
+                    <i class="fa-solid fa-graduation-cap"></i> Students
+                </button>
+                <button id="toggleAdminBtn" class="role-btn" style="padding: 10px 25px; border: none; background: transparent; color: var(--primary-blue); border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.3s ease;">
+                    <i class="fa-solid fa-user-tie"></i> Faculty / Mentors
+                </button>
+            </div>
+        </div>
+
+        <!-- Members Grids -->
+        <div class="members-grid" id="studentsGrid">
             <div class="member-card">
                 <div class="member-avatar" style="background:#e2e8f0;"></div>
                 <div style="height:20px; background:#e2e8f0; width:60%; margin: 0 auto 10px; border-radius:4px;"></div>
                 <div style="height:15px; background:#e2e8f0; width:40%; margin: 0 auto 20px; border-radius:4px;"></div>
             </div>
+        </div>
+
+        <div class="members-grid" id="adminsGrid" style="display: none;">
+            <p style="color: var(--text-secondary); width: 100%; text-align: center;">Loading mentors...</p>
         </div>
 
     </main>

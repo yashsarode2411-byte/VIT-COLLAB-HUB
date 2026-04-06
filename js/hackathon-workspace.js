@@ -166,9 +166,10 @@ function loadApplications() {
             card.innerHTML = `
                 <div class="app-info">
                     <h4>${data.team_name || "Unnamed Team"}</h4>
-                    <p><b>Leader Reg:</b> ${data.leader_reg} | <b>Members:</b> ${data.members_reg}</p>
+                    <p><b>Leader Reg:</b> <a href="profile-view.html?uid=${data.applicant_uid}" target="_blank" style="color: var(--primary-blue); text-decoration: none; font-weight: 600;">${data.leader_reg || 'N/A'}</a> | <b>Members:</b> ${data.members && data.members.length > 0 ? data.members.join(', ') : 'None'}</p>
                 </div>
                 <div class="app-actions">
+                    ${data.ppt_name ? `<a href="${data.ppt_name}" target="_blank" class="btn-download">View PPT</a>` : ''}
                     ${data.ppt_url ? `<a href="${data.ppt_url}" target="_blank" class="btn-download">View PPT</a>` : ''}
                     <button class="btn-approve" onclick="window.updateAppStatus('${docSnap.id}', 'approved')">Approve</button>
                     <button class="btn-reject" onclick="window.updateAppStatus('${docSnap.id}', 'rejected')">Reject</button>
@@ -239,8 +240,9 @@ function loadRounds() {
                         <input type="checkbox" class="team-advance-cb" value="${docSnap.id}" style="width: 18px; height: 18px; cursor: pointer; ${currentRound >= totalRounds ? 'display: none;' : ''}">
                         <div class="app-info" style="flex: 1;">
                             <h4 style="margin: 0; color: var(--dark-text);">${app.team_name || "Unnamed"}</h4>
-                            <p style="margin: 0; margin-top: 4px;">Leader: ${app.leader_reg}</p>
+                            <p style="margin: 0; margin-top: 4px;">Leader: <a href="profile-view.html?uid=${app.applicant_uid}" target="_blank" style="color: var(--primary-blue); text-decoration: none; font-weight: 600;">${app.leader_reg || 'N/A'}</a></p>
                         </div>
+                        ${app.ppt_name ? `<a href="${app.ppt_name}" target="_blank" class="btn-download" style="padding: 5px 10px; font-size: 12px;">View PPT</a>` : ''}
                         ${app.ppt_url ? `<a href="${app.ppt_url}" target="_blank" class="btn-download" style="padding: 5px 10px; font-size: 12px;">View PPT</a>` : ''}
                     </div>
                 `;

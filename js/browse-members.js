@@ -15,6 +15,40 @@ document.addEventListener('DOMContentLoaded', () => {
     initSharedUI();
     initSearchAutocomplete();
     initFilterDropdown();
+    
+    // Segmented Role Toggle Logic
+    const toggleStudentBtn = document.getElementById('toggleStudentBtn');
+    const toggleAdminBtn = document.getElementById('toggleAdminBtn');
+    const studentsGrid = document.getElementById('studentsGrid');
+    const adminsGrid = document.getElementById('adminsGrid');
+
+    if (toggleStudentBtn && toggleAdminBtn) {
+        toggleStudentBtn.addEventListener('click', () => {
+            toggleStudentBtn.classList.add('active');
+            toggleStudentBtn.style.background = 'var(--primary-blue)';
+            toggleStudentBtn.style.color = 'white';
+            
+            toggleAdminBtn.classList.remove('active');
+            toggleAdminBtn.style.background = 'transparent';
+            toggleAdminBtn.style.color = 'var(--primary-blue)';
+            
+            if(studentsGrid) studentsGrid.style.display = 'grid'; // .members-grid uses grid
+            if(adminsGrid) adminsGrid.style.display = 'none';
+        });
+
+        toggleAdminBtn.addEventListener('click', () => {
+            toggleAdminBtn.classList.add('active');
+            toggleAdminBtn.style.background = 'var(--primary-blue)';
+            toggleAdminBtn.style.color = 'white';
+            
+            toggleStudentBtn.classList.remove('active');
+            toggleStudentBtn.style.background = 'transparent';
+            toggleStudentBtn.style.color = 'var(--primary-blue)';
+            
+            if(adminsGrid) adminsGrid.style.display = 'grid';
+            if(studentsGrid) studentsGrid.style.display = 'none';
+        });
+    }
 });
 
 onAuthStateChanged(auth, async (user) => {
@@ -27,9 +61,51 @@ onAuthStateChanged(auth, async (user) => {
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
             const data = userDoc.data();
-            const fullName = data.name || "Student";
+            const fullName = data.name || (data.role === "admin" ? "Admin" : "Student");
             const navUserName = document.getElementById('nav-user-name');
             if (navUserName) navUserName.textContent = fullName;
+
+            // Dynamically inject Admin Navigation if matched
+            if (data.role === 'admin') {
+                const navBrand = document.querySelector('.nav-brand');
+                if (navBrand) navBrand.href = "admin-dashboard.html";
+                
+                const subNav = document.querySelector('.sub-navbar');
+                if (subNav) {
+                    subNav.innerHTML = `
+                        <div class="sub-nav-link" onclick="window.location.href='admin-dashboard.html'">
+                            <span class="icon-btn btn-blue nav-icon" style="pointer-events: none;">
+                                <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                            </span>
+                            <span>Dashboard</span>
+                        </div>
+                        <div class="sub-nav-link" onclick="window.location.href='admin-dashboard.html#requests'">
+                            <span class="icon-btn nav-icon" style="background-color: #0dcaf0; color: #005a6e; pointer-events: none;">
+                                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                            </span>
+                            <span>Requests</span>
+                        </div>
+                        <div class="sub-nav-link" onclick="window.location.href='admin-profile-setup.html'">
+                            <span class="icon-btn btn-indigo nav-icon" style="pointer-events: none;">
+                                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                            </span>
+                            <span>Profile</span>
+                        </div>
+                        <div class="sub-nav-link" onclick="window.location.href='admin-dashboard.html#history'">
+                            <span class="icon-btn nav-icon" style="background-color: var(--success-msg); color: white; border: none; pointer-events: none;">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                            </span>
+                            <span>History</span>
+                        </div>
+                        <div class="sub-nav-link active">
+                            <span class="icon-btn nav-icon" style="background-color: #0dcaf0; color: #005a6e; pointer-events: none;">
+                                <i class="fa-solid fa-users"></i>
+                            </span>
+                            <span>Browse Members</span>
+                        </div>
+                    `;
+                }
+            }
         }
     } catch (e) { console.error("Error fetching user data", e); }
 
@@ -71,12 +147,13 @@ function initSharedUI() {
 }
 
 async function fetchMembers() {
-    const grid = document.getElementById('membersGrid');
+    const studentsGrid = document.getElementById('studentsGrid');
+    const adminsGrid = document.getElementById('adminsGrid');
 
     try {
         const usersRef = collection(db, "users");
-        // We want all students except the current user (if they are a student)
-        const q = query(usersRef, where("role", "==", "student"));
+        // We want all students and admins
+        const q = query(usersRef, where("role", "in", ["student", "admin"]));
         const snapshot = await getDocs(q);
 
         const loadedMembers = [];
@@ -91,22 +168,33 @@ async function fetchMembers() {
 
     } catch (err) {
         console.error("Error fetching members:", err);
-        grid.innerHTML = '<p class="text-danger" style="text-align: center; width: 100%;">Failed to load members.</p>';
+        if (studentsGrid) studentsGrid.innerHTML = '<p class="text-danger" style="text-align: center; width: 100%;">Failed to load members.</p>';
+        if (adminsGrid) adminsGrid.innerHTML = '<p class="text-danger" style="text-align: center; width: 100%;">Failed to load mentors.</p>';
     }
 }
 
 function renderMembersList(members) {
-    const grid = document.getElementById('membersGrid');
-    grid.innerHTML = '';
+    const studentsGrid = document.getElementById('studentsGrid');
+    const adminsGrid = document.getElementById('adminsGrid');
+    
+    if (studentsGrid) studentsGrid.innerHTML = '';
+    if (adminsGrid) adminsGrid.innerHTML = '';
 
-    if (members.length === 0) {
-        grid.innerHTML = '<p class="text-muted" style="text-align: center; width: 100%;">No members found matching your criteria.</p>';
-        return;
+    const students = members.filter(m => m.role !== 'admin');
+    const admins = members.filter(m => m.role === 'admin');
+
+    if (students.length === 0 && studentsGrid) {
+        studentsGrid.innerHTML = '<p class="text-muted" style="text-align: center; width: 100%;">No students found matching your criteria.</p>';
+    }
+    if (admins.length === 0 && adminsGrid) {
+        adminsGrid.innerHTML = '<p class="text-muted" style="text-align: center; width: 100%;">No faculty/mentors found matching your criteria.</p>';
     }
 
-    members.forEach(member => {
-        const name = member.name || "Student";
-        const branch = member.branch || "Branch TBD";
+    const renderCardToGrid = (member, targetGrid) => {
+        if (!targetGrid) return;
+        
+        const name = member.name || (member.role === 'admin' ? "Faculty" : "Student");
+        const branch = member.role === 'admin' ? (member.email || "Faculty Account") : (member.branch || "Branch TBD");
         const avatar = member.avatar_url || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
 
         // Compute rating from Firestore fields
@@ -119,10 +207,18 @@ function renderMembersList(members) {
         }
 
         // Use user-selected top3_skills if available, else fallback
-        const top3Skills = Array.isArray(member.top3_skills) && member.top3_skills.length > 0
-            ? member.top3_skills
-            : (Array.isArray(member.skills) ? member.skills.slice(0, 3) : []);
-        const pillsHTML = top3Skills.map(s => `<span class="skill-pill">${s}</span>`).join('');
+        let pillsHTML = "";
+        if (member.role === 'admin') {
+            pillsHTML = `<span class="skill-pill" style="background: rgba(245, 158, 11, 0.1); color: #b45309;">Mentor</span>`;
+            if (member.employee_id) pillsHTML += `<span class="skill-pill" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">ID: ${member.employee_id}</span>`;
+        } else {
+            const top3Skills = Array.isArray(member.top3_skills) && member.top3_skills.length > 0
+                ? member.top3_skills
+                : (Array.isArray(member.skills) ? member.skills.slice(0, 3) : []);
+            pillsHTML = top3Skills.map(s => `<span class="skill-pill">${s}</span>`).join('');
+        }
+
+        const iconClass = member.role === 'admin' ? "fa-envelope" : "fa-graduation-cap";
 
         const card = document.createElement('div');
         card.className = 'member-card';
@@ -130,19 +226,22 @@ function renderMembersList(members) {
             ${ratingHTML}
             <img src="${avatar}" alt="${name}" class="member-avatar">
             <h3 class="member-name">${name}</h3>
-            <div class="member-role"><i class="fa-solid fa-graduation-cap"></i> ${branch}</div>
+            <div class="member-role"><i class="fa-solid ${iconClass}"></i> ${branch}</div>
             
             <div class="member-skills">
                 ${pillsHTML}
             </div>
 
             <div class="member-actions">
-                <button class="btn btn-outline btn-sm" style="flex: 1;" onclick="window.viewMemberProfile('${member.id}')">View Profile</button>
+                <button class="btn btn-outline btn-sm" style="flex: 1;" onclick="window.location.href='profile-view.html?uid=${member.id}'">View Profile</button>
                 <button class="btn btn-primary btn-sm" style="flex: 1;" onclick="window.location.href='messages.html?userId=${member.id}'"><i class="fa-solid fa-message" style="margin-right: 4px;"></i>Message</button>
             </div>
         `;
-        grid.appendChild(card);
-    });
+        targetGrid.appendChild(card);
+    };
+
+    students.forEach(s => renderCardToGrid(s, studentsGrid));
+    admins.forEach(a => renderCardToGrid(a, adminsGrid));
 }
 
 // ─── Sort by Rating (highest first) ───

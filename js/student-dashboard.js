@@ -434,6 +434,25 @@ window.openProjectSettings = async (projectId, leaderUid) => {
         try {
             // Fetch project to see if we need to revert stats
             const projSnap = await getDoc(doc(db, "projects", projectId));
+            
+            if(projSnap.exists()) {
+                const pData = projSnap.data();
+                
+                // Block Deletion if mentored
+                if (pData.mentor_id) {
+                    await updateDoc(doc(db, "projects", projectId), {
+                        deletion_requested: true,
+                        deletion_requested_by: auth.currentUser ? auth.currentUser.uid : 'unknown'
+                    });
+                    alert("A mentor is actively assigned. A deletion request has been sent to them for approval.");
+                    if (auth.currentUser) fetchActiveProjects(auth.currentUser.uid);
+                    return;
+                }
+            }
+
+            // Delete project first so if it fails, no stats are falsely reversed
+            await deleteDoc(doc(db, "projects", projectId));
+            
             if(projSnap.exists()) {
                 const pData = projSnap.data();
                 if(pData.status === "completed") {
@@ -441,20 +460,23 @@ window.openProjectSettings = async (projectId, leaderUid) => {
                     const members = pData.team_members || [];
                     const indRatings = pData.individual_ratings || {};
                     
-                    // Revert stats for all members
+                    // Revert stats for all members (fails silently if permission denied)
                     for(const uid of members) {
                         const iRating = indRatings[uid] || pRating;
-                        await updateDoc(doc(db, "users", uid), {
-                            total_stars: increment(-iRating),
-                            project_stars: increment(-pRating),
-                            total_reviews: increment(-1),
-                            completed_projects: increment(-1)
-                        });
+                        try {
+                            await updateDoc(doc(db, "users", uid), {
+                                total_stars: increment(-iRating),
+                                project_stars: increment(-pRating),
+                                total_reviews: increment(-1),
+                                completed_projects: increment(-1)
+                            });
+                        } catch(e) {
+                            console.warn("Skipping member stats rollback due to permissions.", e);
+                        }
                     }
                 }
             }
             
-            await deleteDoc(doc(db, "projects", projectId));
             alert("Project successfully deleted.");
             if (auth.currentUser) fetchActiveProjects(auth.currentUser.uid); // reload
         } catch(e) {

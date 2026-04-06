@@ -45,8 +45,8 @@ async function loadProfile(uid) {
 
         const data = docSnap.data();
 
-        // Only show student profiles
-        if (data.role && data.role !== "student") {
+        // Allow students and admins
+        if (data.role && data.role !== "student" && data.role !== "admin") {
             showError();
             return;
         }
@@ -63,18 +63,36 @@ async function loadProfile(uid) {
             document.getElementById('heroCover').style.backgroundPosition = 'center';
         }
 
-        // Branch
-        const branch = data.branch || "Not specified";
-        document.getElementById('heroBranch').innerHTML =
-            `<i class="fa-solid fa-graduation-cap"></i> ${branch}`;
-
-        // Registration Number
         const regNo = data.registration_number || "";
-        if (regNo) {
-            document.getElementById('heroRegNo').innerHTML =
-                `<i class="fa-solid fa-id-card"></i> ${regNo}`;
+
+        // Branch & Reg No OR Email & Employee ID
+        if (data.role === 'admin') {
+            document.getElementById('heroBranch').innerHTML = `<i class="fa-solid fa-envelope"></i> ${data.email || 'No Email Provided'}`;
+            if (data.employee_id) {
+                document.getElementById('heroRegNo').innerHTML = `<i class="fa-solid fa-id-badge"></i> ${data.employee_id}`;
+                document.getElementById('heroRegNo').style.display = 'inline-flex';
+            } else {
+                document.getElementById('heroRegNo').style.display = 'none';
+            }
+            
+            // Adjust Stats Labels for Admin
+            document.getElementById('statCompleted').nextElementSibling.textContent = "Mentored Projects";
+            document.getElementById('statHackathons').parentElement.style.display = 'none'; // Hide Participated stat
+            
+            // Hide Student-only Content Cards
+            document.getElementById('allSkillsContainer').parentElement.style.display = 'none';
+            document.getElementById('linksContainer').parentElement.style.display = 'none';
+            document.getElementById('hackathonsWonContainer').parentElement.style.display = 'none';
         } else {
-            document.getElementById('heroRegNo').style.display = 'none';
+            const branch = data.branch || "Not specified";
+            document.getElementById('heroBranch').innerHTML = `<i class="fa-solid fa-graduation-cap"></i> ${branch}`;
+
+            if (regNo) {
+                document.getElementById('heroRegNo').innerHTML = `<i class="fa-solid fa-id-card"></i> ${regNo}`;
+                document.getElementById('heroRegNo').style.display = 'inline-flex';
+            } else {
+                document.getElementById('heroRegNo').style.display = 'none';
+            }
         }
 
         // Rating
@@ -85,10 +103,16 @@ async function loadProfile(uid) {
             : "No Rating";
 
         document.getElementById('statRating').textContent = avgRating;
-        if (avgRating === "No Rating") {
-            document.getElementById('heroRating').innerHTML = `No Rating`;
+        document.getElementById('statRating').textContent = avgRating;
+        if (data.role === 'admin') {
+            document.getElementById('heroRating').style.display = 'none';
+            document.getElementById('statRating').parentElement.style.display = 'none';
         } else {
-            document.getElementById('heroRating').innerHTML = `<i class="fa-solid fa-star" style="color: #f59e0b;"></i> ${avgRating} / 5.0`;
+            if (avgRating === "No Rating") {
+                document.getElementById('heroRating').innerHTML = `No Rating`;
+            } else {
+                document.getElementById('heroRating').innerHTML = `<i class="fa-solid fa-star" style="color: #f59e0b;"></i> ${avgRating} / 5.0`;
+            }
         }
 
         // ─── Stats ───
@@ -100,7 +124,7 @@ async function loadProfile(uid) {
         try {
             const projQuery = query(
                 collection(db, "projects"),
-                where("team_members", "array-contains", uid)
+                data.role === 'admin' ? where("mentor_id", "==", uid) : where("team_members", "array-contains", uid)
             );
             const projSnap = await getDocs(projQuery);
             totalProjects = projSnap.size;
@@ -313,15 +337,17 @@ async function loadProfile(uid) {
         try {
             const projQuery = query(
                 collection(db, "projects"),
-                where("team_members", "array-contains", uid)
+                data.role === 'admin' ? where("mentor_id", "==", uid) : where("team_members", "array-contains", uid)
             );
             const projSnap = await getDocs(projQuery);
 
             if (projSnap.empty) {
                 projectsContainer.innerHTML = '<span class="empty-state">No project history yet.</span>';
             } else {
+                projectsContainer.innerHTML = '<span class="empty-state">Loading history...</span>'; // Show loader
+
                 let projHTML = '';
-                projSnap.forEach(docSnap => {
+                for (const docSnap of projSnap.docs) {
                     const proj = docSnap.data();
                     const status = proj.status || "pending";
                     const statusLabel = status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ');
@@ -332,6 +358,25 @@ async function loadProfile(uid) {
                     if (status === 'completed') { dotClass = 'completed'; badgeClass = 'badge-completed'; }
                     else if (status === 'ongoing') { dotClass = 'ongoing'; badgeClass = 'badge-ongoing'; }
 
+                    let teamRegNumbersHTML = '';
+                    if (proj.team_members && Array.isArray(proj.team_members)) {
+                        let regNums = [];
+                        for (const memberId of proj.team_members) {
+                            try {
+                                const userSnap = await getDoc(doc(db, "users", memberId));
+                                if (userSnap.exists()) {
+                                    const uData = userSnap.data();
+                                    if (uData.registration_number) {
+                                        regNums.push(`<span style="background: rgba(13, 110, 253, 0.1); color: var(--primary-blue); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-right: 4px;">${uData.registration_number}</span>`);
+                                    }
+                                }
+                            } catch(err) { console.warn("Failed to fetch member info for history.", err); }
+                        }
+                        if (regNums.length > 0) {
+                            teamRegNumbersHTML = `<div style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px;">${regNums.join('')}</div>`;
+                        }
+                    }
+
                     projHTML += `
                     <div class="project-item">
                         <div class="project-info">
@@ -339,11 +384,12 @@ async function loadProfile(uid) {
                             <div>
                                 <div class="project-name">${proj.name || proj.title || 'Untitled Project'}</div>
                                 <div class="project-meta">${ratingText}</div>
+                                ${teamRegNumbersHTML}
                             </div>
                         </div>
                         <span class="project-badge ${badgeClass}">${statusLabel}</span>
                     </div>`;
-                });
+                }
                 projectsContainer.innerHTML = projHTML;
             }
         } catch (e) {

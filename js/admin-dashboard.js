@@ -2,7 +2,7 @@ import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { 
     collection, query, where, doc, updateDoc, 
-    onSnapshot, increment, getDoc, deleteDoc
+    onSnapshot, increment, getDoc, getDocs, deleteDoc, deleteField
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const logoutBtn = document.getElementById('logout-btn');
@@ -31,14 +31,16 @@ let currentTeamMembers = [];
 const tabDashboard = document.getElementById('tab-dashboard');
 const tabRequests = document.getElementById('tab-requests');
 const tabProfile = document.getElementById('tab-profile');
+const tabHistory = document.getElementById('tab-history');
 
 const viewDashboard = document.getElementById('view-dashboard');
 const viewRequests = document.getElementById('view-requests');
 const viewProfile = document.getElementById('view-profile');
+const viewHistory = document.getElementById('view-history');
 
 function hideAllViews() {
-    [tabDashboard, tabRequests, tabProfile].forEach(t => t.classList.remove('active'));
-    [viewDashboard, viewRequests, viewProfile].forEach(v => v.style.display = 'none');
+    [tabDashboard, tabRequests, tabProfile, tabHistory].forEach(t => t.classList.remove('active'));
+    [viewDashboard, viewRequests, viewProfile, viewHistory].forEach(v => v.style.display = 'none');
 }
 
 tabDashboard.addEventListener('click', () => {
@@ -67,6 +69,12 @@ tabProfile.addEventListener('click', async () => {
     }
 });
 
+tabHistory.addEventListener('click', () => {
+    hideAllViews();
+    tabHistory.classList.add('active');
+    viewHistory.style.display = 'block';
+});
+
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
         window.location.href = "/html/login.html";
@@ -89,6 +97,7 @@ onAuthStateChanged(auth, async (user) => {
     // Load Data
     loadMentorRequests();
     loadActiveProjects();
+    loadHistoryProjects();
 });
 
 function loadMentorRequests() {
@@ -169,18 +178,34 @@ function loadActiveProjects() {
             
             const card = document.createElement('div');
             card.className = 'item-card';
-            card.innerHTML = `
-                <div class="item-details" style="flex: 1;">
-                    <h4>${project.name || project.title || 'Untitled Project'}</h4>
-                    <p>Active Submissions: ${project.submission_count || 0}</p>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px;">Invite Code: <strong style="color: var(--primary-blue);">${project.project_code || 'N/A'}</strong></p>
-                </div>
-                <div class="card-actions" style="display: flex; gap: 10px;">
-                    ${project.leader_uid ? `<button class="btn-secondary" onclick="window.viewMemberProfile('${project.leader_uid}')"><i class="fa-solid fa-user" style="margin-right: 4px;"></i> View Profile</button>` : ''}
-                    <button class="btn-secondary" onclick="window.location.href='/html/project-workspace.html?id=${docSnap.id}'">Workspace</button>
-                    <button class="btn-secondary" style="background: var(--primary-blue); color: white;" onclick="window.openCompletionModal('${docSnap.id}', '${teamArrayStr}')">✔ Finish</button>
-                </div>
-            `;
+
+            if (project.deletion_requested) {
+                card.style.border = "1px solid var(--danger-msg)";
+                card.innerHTML = `
+                    <div class="item-details" style="flex: 1;">
+                        <h4 style="color: var(--danger-msg);"><i class="fa-solid fa-triangle-exclamation"></i> Deletion Requested</h4>
+                        <p style="font-weight: 600; margin-bottom: 5px;">${project.name || project.title || 'Untitled Project'}</p>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary);">A student has requested to permanently delete this project. Submissions and data will be lost.</p>
+                    </div>
+                    <div class="card-actions" style="display: flex; gap: 10px;">
+                        <button class="btn-secondary" style="background: transparent; color: var(--danger-msg); border: 1px solid var(--danger-msg);" onclick="window.rejectDeletion('${docSnap.id}')">Reject</button>
+                        <button class="btn-secondary" style="background: var(--danger-msg); color: white;" onclick="window.approveDeletion('${docSnap.id}')">Approve Deletion</button>
+                    </div>
+                `;
+            } else {
+                card.innerHTML = `
+                    <div class="item-details" style="flex: 1;">
+                        <h4>${project.name || project.title || 'Untitled Project'}</h4>
+                        <p>Active Submissions: ${project.submission_count || 0}</p>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px;">Invite Code: <strong style="color: var(--primary-blue);">${project.project_code || 'N/A'}</strong></p>
+                    </div>
+                    <div class="card-actions" style="display: flex; gap: 10px;">
+                        ${project.leader_uid ? `<button class="btn-secondary" onclick="window.viewMemberProfile('${project.leader_uid}')"><i class="fa-solid fa-user" style="margin-right: 4px;"></i> View Profile</button>` : ''}
+                        <button class="btn-secondary" onclick="window.location.href='/html/project-workspace.html?id=${docSnap.id}'">Workspace</button>
+                        <button class="btn-secondary" style="background: var(--primary-blue); color: white;" onclick="window.openCompletionModal('${docSnap.id}', '${teamArrayStr}')">✔ Finish</button>
+                    </div>
+                `;
+            }
             activeContainer.appendChild(card);
         });
     });
@@ -303,7 +328,7 @@ window.openCompletionModal = async (projectId, teamArrayStr) => {
     } catch(e) {
         currentTeamMembers = [];
     }
-    ratingModal.classList.add('active'); // using new active model overlay class
+    ratingModal.style.display = 'flex';
     
     // Load student names dynamically to render individualized rating selectors
     const container = document.getElementById('individual-ratings-container');
@@ -344,7 +369,7 @@ window.openCompletionModal = async (projectId, teamArrayStr) => {
 };
 
 closeModalBtn.addEventListener('click', () => {
-    ratingModal.classList.remove('active');
+    ratingModal.style.display = 'none';
     completingProjectId = null;
     currentTeamMembers = [];
 });
@@ -387,7 +412,7 @@ submitCompletionBtn.addEventListener('click', async () => {
             console.log(`Step 2 SUCCESS: User ${uid} updated.`);
         }
         
-        ratingModal.classList.remove('active');
+        ratingModal.style.display = 'none';
         alert("Project completed successfully! Ratings have been appropriately applied to all students.");
     } catch (e) {
         console.error("Failed to complete project:", e.code, e.message);
@@ -400,7 +425,174 @@ submitCompletionBtn.addEventListener('click', async () => {
     }
 });
 
-// Logout
-logoutBtn.addEventListener('click', () => {
-    signOut(auth).then(() => window.location.href = "/html/login.html");
+// Navigate back
+document.getElementById('logout-btn').addEventListener('click', async () => {
+    try {
+        await signOut(auth);
+        window.location.href = 'login.html';
+    } catch (e) {
+        console.error("Logout failed", e);
+    }
 });
+
+// ─── Project Deletion Approval Handlers ───
+window.rejectDeletion = async (projectId) => {
+    if(!confirm("Reject this deletion request? The project will remain active.")) return;
+    try {
+        await updateDoc(doc(db, "projects", projectId), {
+            deletion_requested: deleteField(),
+            deletion_requested_by: deleteField()
+        });
+        alert("Deletion request rejected. Project re-activated.");
+    } catch(e) {
+        console.error(e);
+        alert("Failed to reject deletion request.");
+    }
+};
+
+window.approveDeletion = async (projectId) => {
+    if(!confirm("WARNING: Approving this will permanently delete the project and all associated sub-data. Continue?")) return;
+    try {
+        const projSnap = await getDoc(doc(db, "projects", projectId));
+        let pData = null;
+        if(projSnap.exists()) pData = projSnap.data();
+
+        // Attempt to clean orphaned subcollections
+        try {
+            const subcollections = ['tasks', 'submissions', 'messages'];
+            for (const sub of subcollections) {
+                const snap = await getDocs(collection(db, "projects", projectId, sub));
+                const promises = [];
+                snap.forEach(docSnap => promises.push(deleteDoc(doc(db, "projects", projectId, sub, docSnap.id))));
+                await Promise.all(promises);
+            }
+        } catch(e) { console.warn("Failed deleting subcollections during approval.", e); }
+        
+        // Delete main document
+        await deleteDoc(doc(db, "projects", projectId));
+
+        // If the project was already completed, roll back member statistics to prevent inflation
+        if (pData && pData.status === "completed") {
+            const members = pData.team_members || [];
+            const pRating = pData.project_rating || pData.rating || 0;
+            const indRatings = pData.individual_ratings || {};
+            for(const uid of members) {
+                const iRating = indRatings[uid] || pRating;
+                try {
+                    await updateDoc(doc(db, "users", uid), {
+                        total_stars: increment(-iRating),
+                        project_stars: increment(-pRating),
+                        total_reviews: increment(-1),
+                        completed_projects: increment(-1)
+                    });
+                } catch(err) { console.warn("Failed to rollback stats for " + uid, err); }
+            }
+        }
+
+        alert("Deletion approved and project destroyed.");
+    } catch(e) {
+        console.error(e);
+        alert("Failed to delete project.");
+    }
+};
+
+function loadHistoryProjects() {
+    const historyContainer = document.getElementById('history-container');
+    const q = query(
+        collection(db, "projects"),
+        where("status", "==", "completed"),
+        where("mentor_id", "==", currentUser.uid)
+    );
+
+    onSnapshot(q, async (snapshot) => {
+        if (snapshot.empty) {
+            historyContainer.innerHTML = '<p style="color: var(--muted-text); font-size: 14px; text-align: center;">No completed projects found in your history.</p>';
+            return;
+        }
+
+        historyContainer.innerHTML = ''; // prevent flickering from async loops
+
+        for (const docSnap of snapshot.docs) {
+            const project = docSnap.data();
+            
+            // Build member list securely
+            let membersHtml = '';
+            if (project.team_members && project.team_members.length > 0) {
+                for (const uid of project.team_members) {
+                    try {
+                        const userSnap = await getDoc(doc(db, "users", uid));
+                        let name = "Student";
+                        let reg = "N/A";
+                        if (userSnap.exists()) {
+                            name = userSnap.data().name || "Student";
+                            reg = userSnap.data().registration_number || uid.substring(0,6);
+                        }
+                        
+                        let starGiven = project.project_rating || 0;
+                        if (project.individual_ratings && project.individual_ratings[uid]) {
+                            starGiven = project.individual_ratings[uid];
+                        }
+
+                        membersHtml += `
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 12px; background: rgba(0,0,0,0.03); border-radius: 8px; margin-top: 4px;">
+                                <div style="font-size: 13px;">
+                                    <strong>${name}</strong> <span style="color: var(--muted-text);">(${reg})</span>
+                                </div>
+                                <div>
+                                    <span style="font-size: 12px; font-weight: bold; color: var(--gold); margin-right: 15px;"><i class="fa-solid fa-star"></i> ${starGiven}</span>
+                                    <a href="#" onclick="window.viewMemberProfile('${uid}'); return false;" style="font-size: 12px; color: var(--primary-blue); font-weight: 600; text-decoration: none;">View Profile</a>
+                                </div>
+                            </div>
+                        `;
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            } else {
+                membersHtml = '<p style="font-size: 13px; color: var(--muted-text);">No team members recorded.</p>';
+            }
+
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            card.style.flexDirection = 'column';
+            card.style.alignItems = 'stretch';
+            
+            if (project.deletion_requested) {
+                card.style.border = "1px solid var(--danger-msg)";
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--danger-msg); padding-bottom: 10px;">
+                        <div>
+                            <h4 style="margin: 0; font-size: 16px; color: var(--danger-msg);"><i class="fa-solid fa-triangle-exclamation"></i> Deletion Requested</h4>
+                            <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">This completed project relies on your approval to be permanently deleted.</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button class="btn-secondary" style="flex: 1; background: transparent; color: var(--danger-msg); border: 1px solid var(--danger-msg);" onclick="window.rejectDeletion('${docSnap.id}')">Reject Deletion</button>
+                        <button class="btn-secondary" style="flex: 1; background: var(--danger-msg); color: white;" onclick="window.approveDeletion('${docSnap.id}')">Approve and Destroy</button>
+                    </div>
+                    <div style="background: var(--card-bg); border-radius: 8px;">
+                        <p style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px;">AFFECTED MEMBER RATINGS</p>
+                        ${membersHtml}
+                    </div>
+                `;
+            } else {
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                        <div>
+                            <h4 style="margin: 0; font-size: 16px;">${project.name || project.title || 'Untitled Project'}</h4>
+                            <p style="font-size: 12px; color: var(--muted-text); margin-top: 2px;">Completed on ${project.completed_at ? new Date(project.completed_at.toDate()).toLocaleDateString() : 'Unknown Date'}</p>
+                        </div>
+                        <div style="background: rgba(245, 158, 11, 0.1); color: #b45309; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 14px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                            <i class="fa-solid fa-star" style="color: #f59e0b; margin-right: 4px;"></i>${project.project_rating || 0} / 5
+                        </div>
+                    </div>
+                    <div style="background: var(--card-bg); border-radius: 8px;">
+                        <p style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px;">MEMBER RATINGS</p>
+                        ${membersHtml}
+                    </div>
+                `;
+            }
+            historyContainer.appendChild(card);
+        }
+    });
+}

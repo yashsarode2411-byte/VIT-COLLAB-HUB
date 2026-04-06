@@ -128,7 +128,13 @@
             </span>
             <span>Profile</span>
         </div>
-        <div id="tab-members" class="sub-nav-link" onclick="window.location.href='admin-browse-members.html'">
+        <div id="tab-history" class="sub-nav-link">
+            <span class="icon-btn nav-icon" style="background-color: var(--success-msg); color: white; border: none;">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+            </span>
+            <span>History</span>
+        </div>
+        <div id="tab-members" class="sub-nav-link" onclick="window.location.href='browse-members.html'">
             <span class="icon-btn nav-icon" style="background-color: #0dcaf0; color: #005a6e; pointer-events: none;">
                 <i class="fa-solid fa-users"></i>
             </span>
@@ -215,6 +221,25 @@
                 <div class="input-group" style="margin-bottom: 5px;">
                     <label style="font-size: 13px; font-weight: 500; color: var(--dark-text); margin-bottom: 4px; display: block;">School / Department</label>
                     <input type="text" id="view-school" class="input-field" readonly style="cursor: default;">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- HISTORY VIEW -->
+    <main id="view-history" class="main-container" style="display: none;">
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Mentorship History</h1>
+                <p style="color: var(--muted-text); margin-top: 5px;">Review all past projects you have evaluated.</p>
+            </div>
+        </div>
+        <div class="dashboard-grid" style="grid-template-columns: 1fr;">
+            <div class="login-card" style="max-width: none; border-top: 4px solid var(--gold);">
+                <div class="form-middle" style="padding: 20px; background: transparent;">
+                    <div id="history-container" class="item-list">
+                        <p style="color: var(--muted-text); font-size: 14px; text-align: center;">No completed projects found in your history.</p>
+                    </div>
                 </div>
             </div>
         </div>

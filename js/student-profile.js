@@ -169,6 +169,26 @@ async function initProfile(user) {
 
         if (docSnap.exists()) {
             userData = { ...userData, ...docSnap.data() };
+            
+            // ─── Self-Healing Patch for Negative Metrics ───
+            let needsHeal = false;
+            let healData = {};
+            const metricFields = ['completed_projects', 'total_stars', 'project_stars', 'total_reviews'];
+            
+            metricFields.forEach(field => {
+                if (userData[field] !== undefined && userData[field] < 0) {
+                    userData[field] = 0;
+                    healData[field] = 0;
+                    needsHeal = true;
+                }
+            });
+            
+            if (needsHeal) {
+                console.warn("Self-Heal Triggered: Resetting negative metrics to 0.");
+                try {
+                    await updateDoc(doc(db, "users", user.uid), healData);
+                } catch(e) { console.error("Self-Heal Failed:", e); }
+            }
         }
 
         // 1 & 2. Map profile strings safely
