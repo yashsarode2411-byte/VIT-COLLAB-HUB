@@ -12,13 +12,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
 
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <link rel="stylesheet" href="../css/login.css">
 </head>
 
 <body>
 
     <!-- NAVBAR -->
-    <header>
+    <header style="position: relative;">
+        <div style="position: absolute; right: 20px; top: 15px;">
+            <button id="themeToggleBtn" class="theme-toggle" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem; margin-right: 15px;" title="Toggle Dark Mode"><i class="fa-solid fa-moon"></i></button>
+        </div>
         <img src="https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Vellore_Institute_of_Technology_seal_2017.svg/1200px-Vellore_Institute_of_Technology_seal_2017.svg.png"
             alt="VIT Logo" class="logo-img"
             style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: white; padding: 2px;">
@@ -108,6 +114,7 @@
 
     <!-- Firebase Logic -->
     <script type="module" src="../js/login.js"></script>
+    <script src="../js/theme.js"></script>
 </body>
 
 </html>

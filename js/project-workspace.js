@@ -452,21 +452,44 @@ function loadChat() {
             return;
         }
 
-        container.innerHTML = messages.map(msg => {
-            const isMe = msg.sender_uid === currentUserUid;
-            const senderName = teamMembersCache[msg.sender_uid]?.name || (msg.sender_uid === currentProjectData?.mentor_id ? 'Mentor' : 'Unknown');
-            const timeStr = msg.timestamp?.toDate ? msg.timestamp.toDate().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '';
+        const renderMessages = () => {
+            container.innerHTML = messages.map(msg => {
+                const isMe = msg.sender_uid === currentUserUid;
+                let senderName = 'Unknown';
+                if (isMe) {
+                    senderName = 'You';
+                } else {
+                    const cachedObj = teamMembersCache[msg.sender_uid] || {};
+                    senderName = cachedObj.name || cachedObj.registration_no || cachedObj.email || (msg.sender_uid === currentProjectData?.mentor_id ? 'Mentor' : 'Unknown');
+                }
+                const timeStr = msg.timestamp?.toDate ? msg.timestamp.toDate().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '';
 
-            return `
-                <div class="chat-bubble ${isMe ? 'chat-me' : 'chat-other'}">
-                    ${!isMe ? `<span class="chat-sender">${senderName}</span>` : ''}
-                    <p class="chat-text">${msg.text}</p>
-                    <span class="chat-time">${timeStr}</span>
-                </div>
-            `;
-        }).join('');
+                return `
+                    <div class="chat-bubble ${isMe ? 'chat-me' : 'chat-other'}">
+                        <span class="chat-sender">${senderName}</span>
+                        <p class="chat-text">${msg.text}</p>
+                        <span class="chat-time">${timeStr}</span>
+                    </div>
+                `;
+            }).join('');
+            scrollChatToBottom();
+        };
 
-        scrollChatToBottom();
+        // Check if there are missing names in the cache and fetch them
+        messages.forEach(msg => {
+            const uid = msg.sender_uid;
+            if (uid !== currentUserUid && uid !== currentProjectData?.mentor_id && !teamMembersCache[uid]) {
+                teamMembersCache[uid] = { name: 'Loading...' }; // stub to avoid repeat requests
+                getDoc(doc(db, "users", uid)).then(snap => {
+                    if (snap.exists()) {
+                        teamMembersCache[uid] = snap.data();
+                        renderMessages(); // re-render once loaded
+                    }
+                }).catch(e => console.error("Error fetching user name for chat:", e));
+            }
+        });
+
+        renderMessages();
     });
 }
 

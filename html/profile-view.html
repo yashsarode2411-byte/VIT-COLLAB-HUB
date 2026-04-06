@@ -20,17 +20,15 @@
 
     <style>
         :root {
-            --primary-blue: #0d6efd;
+            /* Inherit most from global.css. Define only custom one-offs below */
             --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0a1b3f 100%);
-            --card-bg: #ffffff;
-            --bg-color: #f4f6fa;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border-color: #e2e8f0;
-            --danger: #ef4444;
-            --success: #22c55e;
             --gold: #f59e0b;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            /* Update gradient for dark mode if desired */
+            --primary-gradient: linear-gradient(135deg, var(--card-bg) 0%, #0a0b10 100%);
+            --gold: #d97706; /* slightly darker gold for contrast */
         }
 
         body {
@@ -185,6 +183,12 @@
         }
         .btn-share:hover {
             background: #e2e8f0;
+        }
+        [data-theme="dark"] .btn-share {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        [data-theme="dark"] .btn-share:hover {
+            background: rgba(255, 255, 255, 0.12);
         }
         .hero-name {
             font-size: 1.8rem;
@@ -731,6 +735,7 @@
     </div>
 
     <script type="module" src="../js/profile-view.js"></script>
+    <script src="../js/theme.js"></script>
 </body>
 
 </html>

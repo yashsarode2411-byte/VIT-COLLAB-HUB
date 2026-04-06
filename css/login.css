@@ -397,3 +397,62 @@ main {
         font-size: 16px;
     }
 }
+/* =========================================
+   🌙 DARK MODE ("Slate & Obsidian")
+   ========================================= */
+[data-theme="dark"] {
+    --light-bg: #0a0b10;
+    --middle-bg: #0d1117;
+    --card-bg: #161b22;
+    --border-accent: #30363d;
+    --input-border: #30363d;
+    --dark-text: #f0f6fc;
+    --muted-text: #8b949e;
+    --cyan-accent: #1e3a8a; /* Makes gradients darker */
+}
+
+/* Update hash background for dark mode */
+[data-theme="dark"] body {
+    background-image:
+        repeating-linear-gradient(45deg, rgba(22, 27, 34, 0.5), rgba(22, 27, 34, 0.5) 1px, transparent 1px, transparent 15px),
+        repeating-linear-gradient(-45deg, rgba(22, 27, 34, 0.5), rgba(22, 27, 34, 0.5) 1px, transparent 1px, transparent 15px);
+}
+
+/* Header & Footer adjustments */
+[data-theme="dark"] header {
+    background: linear-gradient(to right, #0d1117, #161b22);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    border-bottom: 1px solid var(--border-accent);
+}
+[data-theme="dark"] footer {
+    background: linear-gradient(to right, #0d1117, #161b22);
+    border-top: 1px solid var(--border-accent);
+}
+
+/* Tweak Logo Background in header */
+[data-theme="dark"] .logo-img {
+    background-color: var(--card-bg);
+}
+
+/* Fix Input styles in dark mode */
+[data-theme="dark"] .input-field {
+    background-color: #0d1117;
+    color: var(--dark-text);
+}
+[data-theme="dark"] .input-field:focus {
+    background-color: var(--card-bg);
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+}
+
+[data-theme="dark"] .input-icon {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-left-color: var(--input-border);
+}
+
+/* Auth Links Color Update */
+[data-theme="dark"] .auth-links a {
+    color: #2f81f7; /* Brighter blue for dark mode readability */
+}
+[data-theme="dark"] .home-link {
+    color: #2ea043; /* Valid success green for obsidian */
+}

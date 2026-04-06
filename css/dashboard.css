@@ -77,7 +77,9 @@
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -90,12 +92,21 @@
     opacity: 1;
     pointer-events: auto;
 }
-.modal-content {
-    background: var(--card-bg);
+.modal-content, .card.glass-modal {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     border-radius: 8px;
     padding: 25px;
     width: 90%;
     max-width: 500px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .modal-content, [data-theme="dark"] .card.glass-modal {
+    background: rgba(22, 27, 34, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 .modal-header {
     display: flex;
@@ -458,4 +469,132 @@
         flex: 1;
         justify-content: center;
     }
+}
+
+/* =========================================
+   🌙 DARK MODE OVERRIDES — Club Dashboard
+   ========================================= */
+
+/* Hackathon item cards */
+[data-theme="dark"] .item-card {
+    background: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+[data-theme="dark"] .item-card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Card text */
+[data-theme="dark"] .item-details h4 {
+    color: var(--text-primary) !important;
+}
+[data-theme="dark"] .item-details p {
+    color: var(--text-secondary) !important;
+}
+
+/* Manage / secondary button */
+[data-theme="dark"] .btn-secondary {
+    background: transparent;
+    color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+[data-theme="dark"] .btn-secondary:hover {
+    background: var(--primary-blue);
+    color: #ffffff;
+}
+
+/* Dashboard header title */
+[data-theme="dark"] .dashboard-title {
+    color: var(--text-primary) !important;
+}
+
+/* Create hackathon modal */
+[data-theme="dark"] .modal-header h3 {
+    color: var(--primary-blue) !important;
+}
+[data-theme="dark"] .close-modal {
+    color: var(--text-secondary);
+}
+[data-theme="dark"] .close-modal:hover {
+    color: var(--danger);
+}
+
+/* Stats section */
+[data-theme="dark"] .dashboard-grid .card h3 {
+    color: var(--text-primary) !important;
+    border-bottom-color: var(--border-color) !important;
+}
+
+/* =========================================
+   🌙 DARK MODE OVERRIDES — Admin Dashboard
+   ========================================= */
+
+/* Login-card used as layout cards in admin */
+[data-theme="dark"] .login-card {
+    background: var(--card-bg) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Card headers (Pending Requests, Active Projects, Profile) — override inline background: white */
+[data-theme="dark"] .card-header {
+    background-color: var(--sub-nav-bg, #0d1117) !important;
+    border-bottom-color: var(--border-color) !important;
+}
+[data-theme="dark"] .card-header h3 {
+    color: var(--text-primary) !important;
+}
+
+/* Form-middle section — override inline background: #f8f9fa */
+[data-theme="dark"] .form-middle {
+    background-color: var(--card-bg) !important;
+}
+
+/* Input fields used in admin profile — override inline background-color: #f8f9fa / #e9ecef */
+[data-theme="dark"] .input-field[readonly] {
+    background-color: var(--sub-nav-bg, #0d1117) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Labels in admin profile — override inline color: var(--dark-text) */
+[data-theme="dark"] .input-group label {
+    color: var(--text-secondary) !important;
+}
+
+/* Rating modal sections — override inline backgrounds */
+[data-theme="dark"] #rating-modal .modal-content {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+/* Project rating section (blue tint) */
+[data-theme="dark"] #rating-modal [style*="background: #f0f7ff"] {
+    background: rgba(47, 129, 247, 0.08) !important;
+    border-color: rgba(47, 129, 247, 0.2) !important;
+}
+
+/* Individual rating section (green tint) */
+[data-theme="dark"] #rating-modal [style*="background: #f0fff4"] {
+    background: rgba(63, 185, 80, 0.08) !important;
+    border-color: rgba(63, 185, 80, 0.2) !important;
+}
+
+/* Select dropdown in rating modal */
+[data-theme="dark"] #project-rating,
+[data-theme="dark"] .rating-select {
+    background-color: var(--sub-nav-bg, #0d1117) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Dashboard subtitle */
+[data-theme="dark"] .dashboard-header p {
+    color: var(--text-secondary) !important;
+}
+
+/* Footer dark mode */
+[data-theme="dark"] footer {
+    background: linear-gradient(to right, #0d1117, #161b22) !important;
+    border-top: 1px solid var(--border-color);
 }

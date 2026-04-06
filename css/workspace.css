@@ -63,6 +63,8 @@
     background: #e9ecef;
     color: var(--primary-blue);
     border-left: 3px solid var(--primary-blue);
+    box-shadow: 0 0 12px rgba(13, 110, 253, 0.25);
+    position: relative;
 }
 
 /* Main Content Area */
@@ -285,6 +287,10 @@
     margin-bottom: 2px;
 }
 
+.chat-me .chat-sender {
+    color: rgba(255, 255, 255, 0.85); /* Visible against blue bubble */
+}
+
 .chat-text {
     margin: 0;
     word-wrap: break-word;
@@ -322,7 +328,96 @@
         font-size: 12px;
         padding: 8px 12px;
     }
+    .sidebar-link.active {
+        border-left: none;
+        border-bottom: 3px solid var(--primary-blue);
+        box-shadow: 0 0 12px rgba(13, 110, 253, 0.25);
+    }
     .chat-bubble {
         max-width: 90%;
     }
+}
+
+/* =========================================
+   🌙 DARK MODE ("Slate & Obsidian") OVERRIDES
+   ========================================= */
+[data-theme="dark"] .sidebar {
+    background: var(--card-bg);
+    border-right-color: var(--border-accent);
+}
+
+[data-theme="dark"] .sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .sidebar-link.active {
+    background: rgba(13, 110, 253, 0.1);
+    box-shadow: 0 0 12px rgba(13, 110, 253, 0.25);
+}
+
+[data-theme="dark"] .application-card {
+    background: var(--card-bg);
+    border-color: var(--border-accent);
+}
+
+[data-theme="dark"] .kanban-column {
+    background: var(--middle-bg, #0d1117); /* deep background */
+}
+
+[data-theme="dark"] .kanban-card {
+    background: var(--card-bg);
+    border-color: var(--border-accent);
+}
+
+[data-theme="dark"] .kanban-todo { background: rgba(245, 158, 11, 0.15); color: #d97706; }
+[data-theme="dark"] .kanban-progress { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+[data-theme="dark"] .kanban-done { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+
+[data-theme="dark"] .task-action-btn {
+    border-color: var(--border-accent);
+    color: var(--muted-text);
+}
+
+[data-theme="dark"] .chat-other {
+    background: var(--chat-rec-bg, #21262d);
+    color: var(--dark-text);
+    border: 1px solid var(--border-color, #30363d);
+}
+
+[data-theme="dark"] .chat-other .chat-sender {
+    color: var(--primary-blue);
+}
+
+[data-theme="dark"] .chat-other .chat-time {
+    color: var(--text-secondary, #8b949e);
+    opacity: 0.85;
+}
+
+[data-theme="dark"] .kanban-count {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--dark-text);
+}
+
+/* ENFORCING OVERRIDES WITH IMPORTANT */
+[data-theme="dark"] .kanban-column {
+    background: #0d1117 !important;
+}
+
+[data-theme="dark"] .kanban-card {
+    background: var(--card-bg) !important;
+    border-color: var(--border-accent) !important;
+}
+
+[data-theme="dark"] .kanban-todo { background: rgba(245, 158, 11, 0.15) !important; color: #d97706 !important; }
+[data-theme="dark"] .kanban-progress { background: rgba(59, 130, 246, 0.15) !important; color: #3b82f6 !important; }
+[data-theme="dark"] .kanban-done { background: rgba(16, 185, 129, 0.15) !important; color: #10b981 !important; }
+
+[data-theme="dark"] .kanban-header {
+    background: transparent !important;
+}
+
+/* Also ensure the tasks view background is completely dark mode compliant */
+[data-theme="dark"] #view-tasks,
+[data-theme="dark"] .workspace-content {
+    background: var(--bg-color) !important;
 }

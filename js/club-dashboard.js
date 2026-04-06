@@ -213,6 +213,13 @@ function loadHackathons(clubUid) {
 openModalBtn.addEventListener('click', () => createModal.classList.add('active'));
 closeModalBtn.addEventListener('click', () => createModal.classList.remove('active'));
 
+// Open calendar picker when clicking anywhere on date inputs
+document.querySelectorAll('input[type="date"]').forEach(input => {
+    input.addEventListener('click', function () {
+        try { this.showPicker(); } catch (e) { /* showPicker not supported */ }
+    });
+});
+
 // Create Hackathon Functionality
 createForm.addEventListener('submit', async (e) => {
     e.preventDefault();

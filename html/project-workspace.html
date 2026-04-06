@@ -7,8 +7,8 @@
     <meta name="description" content="Collaborative project workspace for VIT Collab Hub — manage tasks, submissions, chat, and settings.">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/global.css">
-    <link rel="stylesheet" href="../css/workspace.css">
+    <link rel="stylesheet" href="../css/global.css?v=2.1">
+    <link rel="stylesheet" href="../css/workspace.css?v=2.1">
 </head>
 <body style="padding-top: 60px;">
 
@@ -112,7 +112,7 @@
             </div>
 
             <!-- Add Task Form (hidden by default) -->
-            <div id="add-task-form" class="card" style="display: none; margin-bottom: 20px;">
+            <div id="add-task-form" class="card glass-modal" style="display: none; margin-bottom: 20px;">
                 <h3 style="margin-bottom: 12px; font-size: 16px;">New Task</h3>
                 <div class="form-group" style="margin-bottom: 12px;">
                     <label class="form-label">Task Title <span style="color: var(--danger-msg);">*</span></label>
@@ -182,7 +182,7 @@
             </div>
 
             <!-- Add Submission Form -->
-            <div id="add-submission-form" class="card" style="display: none; margin-bottom: 20px;">
+            <div id="add-submission-form" class="card glass-modal" style="display: none; margin-bottom: 20px;">
                 <h3 style="margin-bottom: 12px; font-size: 16px;">Submit Work</h3>
                 <div class="form-group" style="margin-bottom: 12px;">
                     <label class="form-label">Title <span style="color: var(--danger-msg);">*</span></label>
@@ -220,7 +220,7 @@
                 </div>
 
                 <!-- Message Input -->
-                <div style="padding: 15px 20px; border-top: 1px solid var(--border-color); background: #fafbfc; display: flex; gap: 10px; align-items: center;">
+                <div style="padding: 15px 20px; border-top: 1px solid var(--border-color); background: var(--card-bg); display: flex; gap: 10px; align-items: center;">
                     <input type="text" id="chat-input" class="form-input" placeholder="Type a message..." style="flex: 1; margin: 0; border-radius: 20px; padding: 10px 16px;">
                     <button id="send-chat-btn" class="btn-submit" style="background-color: var(--primary-blue); border-radius: 50%; width: 42px; height: 42px; padding: 0; display: flex; align-items: center; justify-content: center;">
                         <i class="fa-solid fa-paper-plane"></i>
@@ -285,6 +285,7 @@
         </main>
     </div>
 
-    <script type="module" src="../js/project-workspace.js"></script>
+    <script type="module" src="../js/project-workspace.js?v=2.1"></script>
+    <script src="../js/theme.js"></script>
 </body>
 </html>
