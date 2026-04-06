@@ -103,23 +103,35 @@ onAuthStateChanged(auth, async (user) => {
 function loadMentorRequests() {
     // Use the admin's real contact email from their profile (not the Firebase Auth dummy email)
     const adminContactEmail = currentProfile.email;
+    
+    // Query projects where this admin is in admin_emails array
     const q = query(
+        collection(db, "projects"), 
+        where("status", "==", "pending_mentor"),
+        where("admin_emails", "array-contains", adminContactEmail)
+    );
+    
+    // Also keep backward compat query for legacy projects with single admin_email
+    const qLegacy = query(
         collection(db, "projects"), 
         where("status", "==", "pending_mentor"),
         where("admin_email", "==", adminContactEmail)
     );
-    
-    onSnapshot(q, (snapshot) => {
-        pendingCount.textContent = snapshot.size;
-        pendingContainer.innerHTML = '';
-        
-        if (snapshot.empty) {
-            pendingContainer.innerHTML = '<p style="color: var(--muted-text); font-size: 14px; text-align: center;">No pending requests at the moment.</p>';
-            return;
-        }
 
+    // Merge results from both queries
+    const seenIds = new Set();
+    
+    const renderCards = (snapshot, isLegacy = false) => {
         snapshot.forEach((docSnap) => {
+            if (seenIds.has(docSnap.id)) return;
+            seenIds.add(docSnap.id);
+            
             const project = docSnap.data();
+            
+            // Check if this admin already approved
+            const approvedBy = project.approved_by || [];
+            const alreadyApproved = approvedBy.includes(currentUser.uid);
+            
             const card = document.createElement('div');
             card.className = 'item-card';
 
@@ -134,6 +146,16 @@ function loadMentorRequests() {
             } else {
                 pptHtml = `<span style="color: var(--muted-text);">No PPT attached</span>`;
             }
+            
+            // Show approval progress for multi-admin projects
+            const totalAdmins = project.admin_emails ? project.admin_emails.length : 1;
+            const approvedCount = approvedBy.length;
+            let approvalHtml = '';
+            if (totalAdmins > 1) {
+                approvalHtml = `<p style="font-size: 0.8rem; color: var(--primary-blue); margin-top: 5px; font-weight: 600;">
+                    📋 Collective Approval: ${approvedCount} / ${totalAdmins} admins approved
+                </p>`;
+            }
 
             card.innerHTML = `
                 <div class="item-details">
@@ -144,18 +166,88 @@ function loadMentorRequests() {
                     </p>
                     <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px;">Invite Code: <strong style="color: var(--primary-blue);">${project.project_code || 'N/A'}</strong></p>
                     <p style="font-size: 0.8rem; margin-top: 8px;">Presentation: ${pptHtml}</p>
+                    ${approvalHtml}
                 </div>
                 <div class="card-actions" style="display: flex; gap: 10px;">
                     ${project.leader_uid ? `<button class="btn-secondary" onclick="window.viewMemberProfile('${project.leader_uid}')"><i class="fa-solid fa-user" style="margin-right: 4px;"></i> View Profile</button>` : ''}
-                    <button class="btn-secondary" onclick="window.acceptMentor('${docSnap.id}')">Accept</button>
+                    ${alreadyApproved 
+                        ? `<button class="btn-secondary" disabled style="opacity: 0.6; background: var(--success-msg); color: white;">✔ Approved</button>`
+                        : `<button class="btn-secondary" onclick="window.acceptMentor('${docSnap.id}')">Accept</button>`
+                    }
                     <button class="btn-secondary" style="background: var(--danger); color: white;" onclick="window.declineMentor('${docSnap.id}')">Decline</button>
+                </div>
+            `;
+            pendingContainer.appendChild(card);
+        });
+    };
+    
+    onSnapshot(q, (snapshot) => {
+        pendingCount.textContent = snapshot.size;
+        pendingContainer.innerHTML = '';
+        seenIds.clear();
+        
+        if (snapshot.empty) {
+            // Also check legacy query
+            getDocs(qLegacy).then(legacySnap => {
+                if (legacySnap.empty) {
+                    pendingContainer.innerHTML = '<p style="color: var(--muted-text); font-size: 14px; text-align: center;">No pending requests at the moment.</p>';
+                    return;
+                }
+                renderCards(legacySnap, true);
+                pendingCount.textContent = legacySnap.size;
+            });
+            return;
+        }
+
+        renderCards(snapshot);
+    });
+    
+    // Also load incoming mentor transfer requests for this admin
+    loadMentorTransferRequests();
+}
+
+function loadMentorTransferRequests() {
+    // Query ongoing projects where a mentor change request targets this admin
+    // We need to find projects with mentor_change_request.new_admin_uid == currentUser.uid
+    // AND mentor_change_request.old_admin_approved == true
+    // Firebase doesn't support nested field queries with onSnapshot well, so we'll use a broader query
+    const qTransfer = query(
+        collection(db, "projects"),
+        where("status", "==", "ongoing")
+    );
+    
+    onSnapshot(qTransfer, (snapshot) => {
+        snapshot.forEach((docSnap) => {
+            const project = docSnap.data();
+            const mcr = project.mentor_change_request;
+            
+            // Only show if this admin is the NEW admin target AND old admin approved
+            if (!mcr || mcr.new_admin_uid !== currentUser.uid || !mcr.old_admin_approved || mcr.new_admin_approved) return;
+            
+            // Check if card already exists
+            if (document.getElementById(`transfer-card-${docSnap.id}`)) return;
+            
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            card.id = `transfer-card-${docSnap.id}`;
+            card.style.border = "1px solid var(--primary-blue)";
+            card.innerHTML = `
+                <div class="item-details">
+                    <h4 style="color: var(--primary-blue);"><i class="fa-solid fa-arrow-right-arrow-left"></i> Mentor Transfer Incoming</h4>
+                    <p style="font-weight: 600; margin-bottom: 5px;">${project.name || project.title || 'Untitled Project'}</p>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">The previous mentor has approved transferring this project's mentorship to you.</p>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px;">Team Size: ${project.team_members?.length || 0} members</p>
+                </div>
+                <div class="card-actions" style="display: flex; gap: 10px;">
+                    ${project.leader_uid ? `<button class="btn-secondary" onclick="window.viewMemberProfile('${project.leader_uid}')"><i class="fa-solid fa-user" style="margin-right: 4px;"></i> View Profile</button>` : ''}
+                    <button class="btn-secondary" style="background: var(--primary-blue); color: white;" onclick="window.approveMentorChangeNew('${docSnap.id}')">Accept Mentorship</button>
+                    <button class="btn-secondary" style="background: var(--danger); color: white;" onclick="window.rejectMentorChange('${docSnap.id}')">Decline</button>
                 </div>
             `;
             pendingContainer.appendChild(card);
         });
     });
 }
-
 function loadActiveProjects() {
     const q = query(
         collection(db, "projects"),
@@ -192,6 +284,20 @@ function loadActiveProjects() {
                         <button class="btn-secondary" style="background: var(--danger-msg); color: white;" onclick="window.approveDeletion('${docSnap.id}')">Approve Deletion</button>
                     </div>
                 `;
+            } else if (project.mentor_change_request && !project.mentor_change_request.old_admin_approved) {
+                // Mentor change request — old admin needs to approve
+                card.style.border = "1px solid #f59e0b";
+                card.innerHTML = `
+                    <div class="item-details" style="flex: 1;">
+                        <h4 style="color: #f59e0b;"><i class="fa-solid fa-arrows-rotate"></i> Mentor Change Requested</h4>
+                        <p style="font-weight: 600; margin-bottom: 5px;">${project.name || project.title || 'Untitled Project'}</p>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary);">The team leader wants to transfer mentorship to: <strong style="color: var(--primary-blue);">${project.mentor_change_request.new_admin_email}</strong></p>
+                    </div>
+                    <div class="card-actions" style="display: flex; gap: 10px;">
+                        <button class="btn-secondary" style="background: transparent; color: #f59e0b; border: 1px solid #f59e0b;" onclick="window.rejectMentorChange('${docSnap.id}')">Reject</button>
+                        <button class="btn-secondary" style="background: #f59e0b; color: white;" onclick="window.approveMentorChangeOld('${docSnap.id}')">Approve Transfer</button>
+                    </div>
+                `;
             } else {
                 card.innerHTML = `
                     <div class="item-details" style="flex: 1;">
@@ -201,7 +307,7 @@ function loadActiveProjects() {
                     </div>
                     <div class="card-actions" style="display: flex; gap: 10px;">
                         ${project.leader_uid ? `<button class="btn-secondary" onclick="window.viewMemberProfile('${project.leader_uid}')"><i class="fa-solid fa-user" style="margin-right: 4px;"></i> View Profile</button>` : ''}
-                        <button class="btn-secondary" onclick="window.location.href='/html/project-workspace.html?id=${docSnap.id}'">Workspace</button>
+                        <button class="btn-secondary" onclick="window.location.href='project-workspace.html?id=${docSnap.id}'">Workspace</button>
                         <button class="btn-secondary" style="background: var(--primary-blue); color: white;" onclick="window.openCompletionModal('${docSnap.id}', '${teamArrayStr}')">✔ Finish</button>
                     </div>
                 `;
@@ -211,13 +317,100 @@ function loadActiveProjects() {
     });
 }
 
+// ─── Mentor Change Request Handlers ───
+window.approveMentorChangeOld = async (projectId) => {
+    if (!confirm("Approve this mentor transfer? The new admin will receive the mentorship request next.")) return;
+    try {
+        const projSnap = await getDoc(doc(db, "projects", projectId));
+        if (!projSnap.exists()) return;
+        const mcr = projSnap.data().mentor_change_request;
+        
+        await updateDoc(doc(db, "projects", projectId), {
+            "mentor_change_request.old_admin_approved": true
+        });
+        
+        alert("Transfer approved. The new admin must now accept to complete the change.");
+    } catch (e) {
+        console.error("Mentor change approval error:", e);
+        alert("Failed to approve mentor change.");
+    }
+};
+
+window.approveMentorChangeNew = async (projectId) => {
+    if (!confirm("Accept mentorship for this project? You will become the new mentor.")) return;
+    try {
+        const projSnap = await getDoc(doc(db, "projects", projectId));
+        if (!projSnap.exists()) return;
+        const mcr = projSnap.data().mentor_change_request;
+        
+        // Both approved — complete the transfer
+        await updateDoc(doc(db, "projects", projectId), {
+            mentor_id: currentUser.uid,
+            mentor: currentProfile.name || "Mentor",
+            admin_email: mcr.new_admin_email,
+            admin_emails: [mcr.new_admin_email],
+            admin_uids: [currentUser.uid],
+            approved_by: [currentUser.uid],
+            mentor_change_request: null // clear the request
+        });
+        
+        alert("Mentor transfer complete! You are now the mentor for this project.");
+    } catch (e) {
+        console.error("Mentor change accept error:", e);
+        alert("Failed to accept mentorship.");
+    }
+};
+
+window.rejectMentorChange = async (projectId) => {
+    if (!confirm("Reject this mentor change request?")) return;
+    try {
+        await updateDoc(doc(db, "projects", projectId), {
+            mentor_change_request: null
+        });
+        alert("Mentor change request rejected.");
+    } catch (e) {
+        console.error("Mentor change reject error:", e);
+        alert("Failed to reject mentor change.");
+    }
+};
+
 // Global scope functions for inline HTML calls
 window.acceptMentor = async (projectId) => {
     try {
-        await updateDoc(doc(db, "projects", projectId), {
-            status: "ongoing",
-            mentor_id: currentUser.uid
-        });
+        const projSnap = await getDoc(doc(db, "projects", projectId));
+        if (!projSnap.exists()) return alert("Project not found.");
+        
+        const projData = projSnap.data();
+        const adminEmails = projData.admin_emails || [projData.admin_email];
+        const approvedBy = projData.approved_by || [];
+        
+        // Add current admin to approved_by
+        if (!approvedBy.includes(currentUser.uid)) {
+            approvedBy.push(currentUser.uid);
+        }
+        
+        // Check if ALL admins have now approved
+        const adminUids = projData.admin_uids || [];
+        const allApproved = adminUids.length > 0 
+            ? adminUids.every(uid => approvedBy.includes(uid))
+            : approvedBy.length >= adminEmails.length;
+        
+        if (allApproved) {
+            // All admins approved — project goes live with the last approving admin as mentor
+            await updateDoc(doc(db, "projects", projectId), {
+                status: "ongoing",
+                mentor_id: currentUser.uid,
+                mentor: currentProfile.name || "Mentor",
+                approved_by: approvedBy
+            });
+            alert("All admins have approved! Project is now ONGOING. You are assigned as the primary mentor.");
+        } else {
+            // Partial approval — update approved_by and wait for others
+            await updateDoc(doc(db, "projects", projectId), {
+                approved_by: approvedBy
+            });
+            alert(`Your approval recorded! Waiting for ${adminEmails.length - approvedBy.length} more admin(s) to approve.`);
+        }
     } catch (e) {
         console.error("Failed to accept project", e);
         alert("Failed to accept project. Check permissions.");
@@ -225,9 +418,34 @@ window.acceptMentor = async (projectId) => {
 };
 
 window.declineMentor = async (projectId) => {
-    if(!confirm("Are you sure you want to decline and delete this project request?")) return;
+    if(!confirm("Are you sure you want to decline this mentor request?")) return;
     try {
-        await deleteDoc(doc(db, "projects", projectId));
+        const projSnap = await getDoc(doc(db, "projects", projectId));
+        if (!projSnap.exists()) return;
+        
+        const projData = projSnap.data();
+        const adminEmails = projData.admin_emails || [projData.admin_email];
+        const adminUids = projData.admin_uids || [];
+        
+        // Remove this admin from the lists
+        const updatedEmails = adminEmails.filter(e => e !== currentProfile.email);
+        const updatedUids = adminUids.filter(uid => uid !== currentUser.uid);
+        const updatedApproved = (projData.approved_by || []).filter(uid => uid !== currentUser.uid);
+        
+        if (updatedEmails.length === 0) {
+            // Last admin declined — delete the project
+            await deleteDoc(doc(db, "projects", projectId));
+            alert("You were the last admin. Project request has been deleted.");
+        } else {
+            // Remove this admin but keep the project for remaining admins
+            await updateDoc(doc(db, "projects", projectId), {
+                admin_emails: updatedEmails,
+                admin_uids: updatedUids,
+                admin_email: updatedEmails[0], // backward compat
+                approved_by: updatedApproved
+            });
+            alert("You have declined this request. The remaining admin(s) can still approve.");
+        }
     } catch (e) {
         console.error("Failed to decline project", e);
         alert("Failed to decline project. Check permissions.");

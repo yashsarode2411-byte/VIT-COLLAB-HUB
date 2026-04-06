@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIT COLLAB HUB - Project Workspace</title>
-    <meta name="description" content="Collaborative project workspace for VIT Collab Hub — manage tasks, submissions, chat, and settings.">
+    <title>VIT COLLAB HUB - Hackathon Workspace</title>
+    <meta name="description" content="Student hackathon workspace — view announcements, team status, tasks, submissions, and chat.">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/global.css?v=2.1">
@@ -14,23 +14,23 @@
 
     <!-- Top Navigation Bar -->
     <header class="top-navbar">
-        <a href="#" id="backToDashboardLink" class="nav-brand" style="text-decoration: none;">
+        <a href="student-hackathons.html" class="nav-brand" style="text-decoration: none;">
             <img src="https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Vellore_Institute_of_Technology_seal_2017.svg/1200px-Vellore_Institute_of_Technology_seal_2017.svg.png"
                 alt="VIT Logo" class="nav-logo" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: white; padding: 2px;">
             <span class="nav-title">VIT COLLAB HUB</span>
         </a>
         <div style="position: absolute; left: 50%; transform: translateX(-50%);">
-            <span id="nav-role-label" style="color: white; font-weight: 600; font-size: 15px; letter-spacing: 0.5px;">Project Workspace</span>
+            <span id="nav-role-label" style="color: white; font-weight: 600; font-size: 15px; letter-spacing: 0.5px;">Hackathon Workspace</span>
         </div>
         <div class="nav-actions">
-            <button id="backBtn" class="btn-logout"><i class="fa-solid fa-arrow-left" style="margin-right: 6px;"></i>Back to Dashboard</button>
+            <button id="backBtn" class="btn-logout"><i class="fa-solid fa-arrow-left" style="margin-right: 6px;"></i>Back to Hackathons</button>
         </div>
     </header>
 
     <div class="workspace-layout">
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
-            <h4 style="margin-bottom: 10px; margin-top: 10px; color: var(--muted-text); font-size: 12px; text-transform: uppercase;">Workspace</h4>
+            <h4 style="margin-bottom: 10px; margin-top: 10px; color: var(--muted-text); font-size: 12px; text-transform: uppercase;">Hackathon</h4>
             
             <div id="tab-overview" class="sidebar-link active">
                 <span class="nav-icon" style="background-color: var(--primary-blue); color: white;">
@@ -54,48 +54,59 @@
                 <span class="nav-icon" style="background-color: #8b5cf6; color: white;">
                     <i class="fa-solid fa-comments" style="font-size: 13px;"></i>
                 </span>
-                <span>Chat</span>
+                <span>Team Chat</span>
             </div>
-            <div id="tab-settings" class="sidebar-link">
-                <span class="nav-icon bg-orange">
-                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.73 8.87c-.11.2-.06.47.12.61l2.03 1.58c-.04.3-.06.62-.06.94s.02.64.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .43-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.49-.12-.61l-2.03-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            <div id="tab-announcements" class="sidebar-link">
+                <span class="nav-icon" style="background-color: #e0b0ff; color: #5b0086;">
+                    <i class="fa-solid fa-bullhorn" style="font-size: 13px;"></i>
                 </span>
-                <span>Settings</span>
+                <span>Announcements</span>
+            </div>
+            <div id="tab-rounds" class="sidebar-link">
+                <span class="nav-icon" style="background-color: #0dcaf0; color: #005a6e;">
+                    <i class="fa-solid fa-layer-group" style="font-size: 13px;"></i>
+                </span>
+                <span>Rounds</span>
+            </div>
+            <div id="tab-winners" class="sidebar-link">
+                <span class="nav-icon" style="background-color: #ffd43b; color: #b35100;">
+                    <i class="fa-solid fa-trophy" style="font-size: 13px;"></i>
+                </span>
+                <span>Winners</span>
             </div>
         </aside>
 
         <!-- ===== OVERVIEW VIEW ===== -->
         <main class="workspace-content" id="view-overview">
-            <h2 style="color: var(--primary-blue); margin-bottom: 8px;" id="project-title">Loading Workspace...</h2>
+            <h2 style="color: var(--primary-blue); margin-bottom: 8px;" id="hackathon-title">Loading Workspace...</h2>
 
-            <!-- Project Info Bar -->
-            <div id="project-info-bar" style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 18px 22px; margin-bottom: 24px; display: none;">
-                <p id="proj-info-desc" style="color: var(--dark-text); font-size: 14px; margin-bottom: 10px; font-style: italic;"></p>
+            <!-- Hackathon Info Bar -->
+            <div id="hackathon-info-bar" style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 18px 22px; margin-bottom: 24px; display: none;">
+                <p id="hack-info-desc" style="color: var(--dark-text); font-size: 14px; margin-bottom: 10px; font-style: italic;"></p>
                 <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 13px; color: var(--muted-text);">
-                    <span id="proj-info-status">📊 Loading status...</span>
-                    <span id="proj-info-code">🔑 Loading code...</span>
-                    <span id="proj-info-mentor">🎓 Loading mentor...</span>
+                    <span id="hack-info-dates">📅 Loading dates...</span>
+                    <span id="hack-info-deadline">⏰ Loading deadline...</span>
+                    <span id="hack-info-round">🏁 Loading round...</span>
                 </div>
             </div>
 
-            <!-- Skills -->
+            <!-- Team Info -->
             <div class="card" style="margin-bottom: 20px;">
                 <h3 style="margin-bottom: 12px; border-bottom: 1px solid var(--border-accent); padding-bottom: 10px;">
-                    <i class="fa-solid fa-code" style="color: var(--primary-blue); margin-right: 8px;"></i>Skills Required
+                    <i class="fa-solid fa-users" style="color: var(--primary-blue); margin-right: 8px;"></i>Your Team
                 </h3>
-                <div id="skills-container" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                    <span style="color: var(--muted-text); font-size: 14px;">Loading skills...</span>
+                <div id="team-info-container">
+                    <p style="color: var(--muted-text); font-size: 14px;">Loading team info...</p>
                 </div>
             </div>
 
-            <!-- Team Members -->
+            <!-- Status Card -->
             <div class="card">
-                <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--border-accent); padding-bottom: 10px;">
-                    <i class="fa-solid fa-users" style="color: var(--primary-blue); margin-right: 8px;"></i>Team Members
-                    <span id="team-count-badge" style="background: var(--primary-blue); color: white; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-left: 8px;">0</span>
+                <h3 style="margin-bottom: 12px; border-bottom: 1px solid var(--border-accent); padding-bottom: 10px;">
+                    <i class="fa-solid fa-signal" style="color: var(--primary-blue); margin-right: 8px;"></i>Your Status
                 </h3>
-                <div id="team-members-list" style="display: flex; flex-direction: column; gap: 12px;">
-                    <p style="color: var(--muted-text); font-size: 14px;">Loading team members...</p>
+                <div id="status-container">
+                    <p style="color: var(--muted-text); font-size: 14px;">Loading status...</p>
                 </div>
             </div>
         </main>
@@ -111,7 +122,7 @@
                 </button>
             </div>
 
-            <!-- Add Task Form (hidden by default) -->
+            <!-- Add Task Form -->
             <div id="add-task-form" class="card glass-modal" style="display: none; margin-bottom: 20px;">
                 <h3 style="margin-bottom: 12px; font-size: 16px;">New Task</h3>
                 <div class="form-group" style="margin-bottom: 12px;">
@@ -186,7 +197,7 @@
                 <h3 style="margin-bottom: 12px; font-size: 16px;">Submit Work</h3>
                 <div class="form-group" style="margin-bottom: 12px;">
                     <label class="form-label">Title <span style="color: var(--danger-msg);">*</span></label>
-                    <input type="text" class="form-input" id="submission-title-input" placeholder="e.g. Sprint 1 deliverable" required>
+                    <input type="text" class="form-input" id="submission-title-input" placeholder="e.g. Prototype Demo" required>
                 </div>
                 <div class="form-group" style="margin-bottom: 12px;">
                     <label class="form-label">Link (GitHub / Drive / etc.) <span style="color: var(--danger-msg);">*</span></label>
@@ -208,18 +219,15 @@
         </main>
 
         <!-- ===== CHAT VIEW ===== -->
-        <main class="workspace-content" id="view-chat" style="display: none; display: none; flex-direction: column;">
+        <main class="workspace-content" id="view-chat" style="display: none; flex-direction: column;">
             <h2 style="color: var(--primary-blue); margin-bottom: 15px;">
-                <i class="fa-solid fa-comments" style="margin-right: 8px;"></i>Project Chat
+                <i class="fa-solid fa-comments" style="margin-right: 8px;"></i>Team Chat
             </h2>
 
             <div class="card" style="flex: 1; display: flex; flex-direction: column; min-height: 400px; padding: 0; overflow: hidden;">
-                <!-- Messages Area -->
                 <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
                     <p style="color: var(--muted-text); font-size: 14px; text-align: center; margin-top: 40px;">Loading messages...</p>
                 </div>
-
-                <!-- Message Input -->
                 <div style="padding: 15px 20px; border-top: 1px solid var(--border-color); background: var(--card-bg); display: flex; gap: 10px; align-items: center;">
                     <input type="text" id="chat-input" class="form-input" placeholder="Type a message..." style="flex: 1; margin: 0; border-radius: 20px; padding: 10px 16px;">
                     <button id="send-chat-btn" class="btn-submit" style="background-color: var(--primary-blue); border-radius: 50%; width: 42px; height: 42px; padding: 0; display: flex; align-items: center; justify-content: center;">
@@ -229,91 +237,40 @@
             </div>
         </main>
 
-        <!-- ===== SETTINGS VIEW ===== -->
-        <main class="workspace-content" id="view-settings" style="display: none;">
+        <!-- ===== ANNOUNCEMENTS VIEW (Read-only) ===== -->
+        <main class="workspace-content" id="view-announcements" style="display: none;">
             <h2 style="color: var(--primary-blue); margin-bottom: 20px;">
-                <i class="fa-solid fa-gear" style="margin-right: 8px;"></i>Project Settings
+                <i class="fa-solid fa-bullhorn" style="margin-right: 8px;"></i>Announcements from Organizers
             </h2>
-
-            <!-- Invite Code Card -->
-            <div class="card" style="margin-bottom: 20px;">
-                <h3 style="margin-bottom: 12px; border-bottom: 1px solid var(--border-accent); padding-bottom: 10px;">Invite Code</h3>
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <span id="settings-invite-code" style="font-size: 1.8rem; letter-spacing: 4px; font-weight: 700; color: var(--primary-blue);">------</span>
-                    <button id="copy-code-btn" class="btn-submit" style="background-color: var(--cyan-accent); padding: 8px 16px; font-size: 13px;">
-                        <i class="fa-solid fa-copy" style="margin-right: 4px;"></i>Copy
-                    </button>
-                </div>
-                <p style="font-size: 0.8rem; color: var(--muted-text); margin-top: 8px;">Share this code with team members so they can join.</p>
-            </div>
-
-            <!-- Edit Project Details (Leader Only) -->
-            <div class="card" id="edit-project-card" style="margin-bottom: 20px;">
-                <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--border-accent); padding-bottom: 10px;">Edit Project Details</h3>
-                <form id="edit-project-form">
-                    <div class="form-group" style="margin-bottom: 15px;">
-                        <label class="form-label">Project Name</label>
-                        <input type="text" id="edit-proj-name" class="form-input" required>
-                    </div>
-                    <div class="form-group" style="margin-bottom: 15px;">
-                        <label class="form-label">Description</label>
-                        <textarea id="edit-proj-desc" class="form-input" rows="3" style="resize: vertical;" required></textarea>
-                    </div>
-                    <div class="form-group" style="margin-bottom: 15px;">
-                        <label class="form-label">PPT / Presentation Link</label>
-                        <input type="url" id="edit-proj-ppt" class="form-input" placeholder="https://...">
-                    </div>
-                    <button type="submit" id="save-project-settings" class="btn-submit" style="background-color: var(--primary-blue);">Save Changes</button>
-                </form>
-            </div>
-
-            <!-- Change Mentor (Leader Only) -->
-            <div class="card" id="change-mentor-card" style="margin-bottom: 20px; display: none;">
-                <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--border-accent); padding-bottom: 10px;">
-                    <i class="fa-solid fa-user-tie" style="color: var(--primary-blue); margin-right: 8px;"></i>Change Mentor
-                </h3>
-                <div style="margin-bottom: 15px;">
-                    <p style="font-size: 14px; color: var(--dark-text); margin-bottom: 5px;">
-                        <strong>Current Mentor:</strong> <span id="current-mentor-name" style="color: var(--primary-blue);">Not Assigned</span>
-                    </p>
-                    <p id="mentor-change-pending-msg" style="display: none; font-size: 13px; color: #f59e0b; font-weight: 600; margin-top: 8px;">
-                        <i class="fa-solid fa-hourglass-half" style="margin-right: 4px;"></i>Mentor change is pending approval...
-                    </p>
-                </div>
-                <div id="mentor-change-form-area">
-                    <div class="form-group" style="margin-bottom: 12px;">
-                        <label class="form-label">New Admin Email <span style="color: var(--danger-msg);">*</span></label>
-                        <input type="email" id="new-mentor-email" class="form-input" placeholder="newadmin@vit.ac.in">
-                    </div>
-                    <p style="font-size: 0.75rem; color: var(--muted-text); margin-bottom: 12px;">
-                        <i class="fa-solid fa-info-circle" style="margin-right: 4px;"></i>
-                        Both the current mentor (old admin) and the new admin must approve this change.
-                    </p>
-                    <button id="request-mentor-change-btn" class="btn-submit" style="background-color: #f59e0b;">
-                        <i class="fa-solid fa-arrows-rotate" style="margin-right: 6px;"></i>Request Mentor Change
-                    </button>
+            <div class="card">
+                <div id="announcements-list" style="display: flex; flex-direction: column; gap: 15px;">
+                    <p style="color: var(--muted-text); font-size: 14px;">Loading announcements...</p>
                 </div>
             </div>
+        </main>
 
-            <!-- Danger Zone -->
-            <div class="card" id="danger-zone-card">
-                <h3 style="margin-bottom: 15px; color: var(--danger-msg);">
-                    <i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i>Danger Zone
-                </h3>
-                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                    <button id="leave-project-btn" class="btn-submit" style="background-color: #f59e0b;">
-                        <i class="fa-solid fa-right-from-bracket" style="margin-right: 6px;"></i>Leave Project
-                    </button>
-                    <button id="delete-project-btn" class="btn-submit" style="background-color: var(--danger-msg); display: none;">
-                        <i class="fa-solid fa-trash" style="margin-right: 6px;"></i>Delete Project
-                    </button>
-                </div>
-                <p style="color: var(--muted-text); font-size: 0.8rem; margin-top: 10px;">Leaving removes you from the team. Deleting (leader only) permanently removes the project and all data.</p>
+        <!-- ===== ROUNDS VIEW ===== -->
+        <main class="workspace-content" id="view-rounds" style="display: none;">
+            <h2 style="color: var(--primary-blue); margin-bottom: 20px;">
+                <i class="fa-solid fa-layer-group" style="margin-right: 8px;"></i>Round Progression
+            </h2>
+            <div id="rounds-timeline" class="card">
+                <p style="color: var(--muted-text); font-size: 14px;">Loading round info...</p>
+            </div>
+        </main>
+
+        <!-- ===== WINNERS VIEW ===== -->
+        <main class="workspace-content" id="view-winners" style="display: none;">
+            <h2 style="color: var(--primary-blue); margin-bottom: 20px;">
+                <i class="fa-solid fa-trophy" style="margin-right: 8px;"></i>Winners
+            </h2>
+            <div id="winners-container" class="card">
+                <p style="color: var(--muted-text); font-size: 14px;">Loading winners...</p>
             </div>
         </main>
     </div>
 
-    <script type="module" src="../js/project-workspace.js?v=2.1"></script>
+    <script type="module" src="../js/student-hackathon-workspace.js?v=2.1"></script>
     <script src="../js/theme.js"></script>
 </body>
 </html>

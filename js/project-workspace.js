@@ -14,6 +14,7 @@ import {
 // ─── URL Params & DOM ───
 const urlParams = new URLSearchParams(window.location.search);
 const projectId = urlParams.get('id');
+const initialTab = urlParams.get('tab'); // e.g. 'settings'
 
 const titleDisplay = document.getElementById('project-title');
 
@@ -119,6 +120,12 @@ onAuthStateChanged(auth, async (user) => {
         loadTasks();
         loadSubmissions();
         loadChat();
+
+        // Auto-switch to a specific tab if requested via URL param
+        if (initialTab === 'settings') {
+            switchView(4);
+            prefillSettings();
+        }
 
     } catch (err) {
         console.error("Workspace Boot Error:", err);
@@ -544,7 +551,93 @@ function prefillSettings() {
     document.getElementById('edit-project-card').style.display = (isLeader || isMentor) ? 'block' : 'none';
     document.getElementById('delete-project-btn').style.display = isLeader ? 'inline-flex' : 'none';
     document.getElementById('leave-project-btn').style.display = isLeader ? 'none' : 'inline-flex';
+    
+    // Change Mentor card (leader only, only when mentor is assigned)
+    const changeMentorCard = document.getElementById('change-mentor-card');
+    if (isLeader && p.mentor_id) {
+        changeMentorCard.style.display = 'block';
+        
+        // Show current mentor name
+        const mentorNameEl = document.getElementById('current-mentor-name');
+        if (p.mentor_id && teamMembersCache[p.mentor_id]) {
+            mentorNameEl.textContent = teamMembersCache[p.mentor_id].name || 'Mentor';
+        } else if (p.mentor) {
+            mentorNameEl.textContent = p.mentor;
+        } else {
+            mentorNameEl.textContent = 'Assigned';
+        }
+        
+        // Check if there's a pending mentor change request
+        const pendingMsg = document.getElementById('mentor-change-pending-msg');
+        const formArea = document.getElementById('mentor-change-form-area');
+        if (p.mentor_change_request) {
+            pendingMsg.style.display = 'block';
+            pendingMsg.innerHTML = `<i class="fa-solid fa-hourglass-half" style="margin-right: 4px;"></i>
+                Mentor change pending — requesting: ${p.mentor_change_request.new_admin_email}
+                (Old admin ${p.mentor_change_request.old_admin_approved ? '✅ approved' : '⏳ pending'}, 
+                 New admin ${p.mentor_change_request.new_admin_approved ? '✅ approved' : '⏳ pending'})`;
+            formArea.style.display = 'none';
+        } else {
+            pendingMsg.style.display = 'none';
+            formArea.style.display = 'block';
+        }
+    } else {
+        changeMentorCard.style.display = 'none';
+    }
 }
+
+// Mentor Change Request Handler
+document.getElementById('request-mentor-change-btn').addEventListener('click', async () => {
+    const newEmail = document.getElementById('new-mentor-email').value.trim();
+    if (!newEmail) return alert("Please enter the new admin's email.");
+    
+    const btn = document.getElementById('request-mentor-change-btn');
+    btn.textContent = "Validating...";
+    btn.disabled = true;
+    
+    try {
+        // Validate new admin exists
+        const qAdmin = query(collection(db, "users"), where("email", "==", newEmail), where("role", "==", "admin"));
+        const adminSnap = await getDocs(qAdmin);
+        
+        if (adminSnap.empty) {
+            alert(`No active admin found with email: "${newEmail}"`);
+            return;
+        }
+        
+        const newAdminUid = adminSnap.docs[0].id;
+        const newAdminName = adminSnap.docs[0].data().name || 'Admin';
+        
+        if (newAdminUid === currentProjectData.mentor_id) {
+            alert("This admin is already the current mentor!");
+            return;
+        }
+        
+        // Store the mentor change request on the project
+        await updateDoc(doc(db, "projects", projectId), {
+            mentor_change_request: {
+                new_admin_email: newEmail,
+                new_admin_uid: newAdminUid,
+                new_admin_name: newAdminName,
+                old_mentor_id: currentProjectData.mentor_id,
+                old_admin_approved: false,
+                new_admin_approved: false,
+                requested_at: new Date().toISOString(),
+                requested_by: currentUserUid
+            }
+        });
+        
+        alert(`Mentor change request submitted!\n\nBoth the current mentor and ${newAdminName} must approve this change.`);
+        document.getElementById('new-mentor-email').value = '';
+        
+    } catch (e) {
+        console.error("Mentor change request error:", e);
+        alert("Failed to submit mentor change request.");
+    } finally {
+        btn.innerHTML = '<i class="fa-solid fa-arrows-rotate" style="margin-right: 6px;"></i>Request Mentor Change';
+        btn.disabled = false;
+    }
+});
 
 // Copy invite code
 document.getElementById('copy-code-btn').addEventListener('click', () => {

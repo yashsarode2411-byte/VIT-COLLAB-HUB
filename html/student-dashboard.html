@@ -138,6 +138,24 @@
                 </div>
             </section>
 
+            <!-- My Hackathons Section -->
+            <section class="active-projects-section" style="margin-top: 25px;">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-trophy"></i> My Hackathons</h2>
+                    <a href="student-hackathons.html" class="view-all">Browse All</a>
+                </div>
+                <div class="projects-grid" id="myHackathonsContainer">
+                    <div class="card project-card skeleton-card">
+                        <div class="project-info">
+                            <div class="project-header">
+                                <h3 class="project-title" style="background:#e2e8f0; width:60%; height:24px; border-radius:4px;"></h3>
+                            </div>
+                            <div class="project-tech-stack" style="height: 24px; background:#e2e8f0; width:40%; border-radius:4px; margin: 15px 0;"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </div>
 
         <!-- Right Column: Side Content (Invites & Hackathons) -->
@@ -255,11 +273,11 @@
                         OneDrive, or any shareable link to your PPT.</p>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Admin Email to Send Request <span
+                    <label class="form-label">Admin Email(s) to Send Request <span
                             style="color: var(--danger);">*</span></label>
-                    <input type="email" class="form-input" id="projAdminEmail" placeholder="admin@vit.ac.in" required>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Must be a valid
-                        registered admin.</p>
+                    <textarea class="form-input" id="projAdminEmail" rows="2" placeholder="admin1@vit.ac.in, admin2@vit.ac.in" required></textarea>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Enter one or more
+                        registered admin emails, separated by commas. All admins must collectively approve.</p>
                 </div>
 
                 <button type="submit" class="btn btn-primary" id="submitProjectBtn"

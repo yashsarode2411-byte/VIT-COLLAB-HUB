@@ -1,6 +1,6 @@
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { collection, query, onSnapshot, addDoc, serverTimestamp, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { collection, query, onSnapshot, addDoc, serverTimestamp, getDoc, doc, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const hackathonsContainer = document.getElementById('hackathons-container');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -11,6 +11,7 @@ const closeModalBtn = document.getElementById('closeModalBtn');
 const joinForm = document.getElementById('joinHackathonForm');
 
 let studentRegCache = "";
+let myApplications = {}; // hackathon_id -> { status, appId }
 
 document.addEventListener('DOMContentLoaded', () => {
     const profileMenu = document.getElementById('profileMenu');
@@ -49,8 +50,28 @@ onAuthStateChanged(auth, async (user) => {
         }
     } catch(e) { console.error("Could not fetch user cache", e); }
 
+    // Load student's existing hackathon applications
+    await loadMyApplications(user.uid);
     loadHackathons();
 });
+
+async function loadMyApplications(uid) {
+    try {
+        const q = query(collection(db, "hackathon_applications"), where("applicant_uid", "==", uid));
+        const snap = await getDocs(q);
+        myApplications = {};
+        snap.forEach(docSnap => {
+            const data = docSnap.data();
+            myApplications[data.hackathon_id] = {
+                status: data.status,
+                appId: docSnap.id,
+                team_name: data.team_name
+            };
+        });
+    } catch(e) {
+        console.error("Failed to load existing applications", e);
+    }
+}
 
 let allHackathons = [];
 let currentFilter = 'ongoing';
@@ -84,7 +105,6 @@ function loadHackathons() {
 function renderHackathons() {
     hackathonsContainer.innerHTML = '';
     
-    // Evaluate dates to categorize correctly
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -106,9 +126,7 @@ function renderHackathons() {
             evalStatus = hack.status || "upcoming"; 
         }
 
-        // Hard overrides
         if (hack.status === "completed") evalStatus = "completed";
-
         return evalStatus === currentFilter;
     });
 
@@ -123,6 +141,7 @@ function renderHackathons() {
     filtered.forEach(hack => {
         const hackId = hack.id;
         const isCompleted = currentFilter === "completed";
+        const existingApp = myApplications[hackId];
         
         const card = document.createElement('div');
         card.className = 'hackathon-card';
@@ -137,6 +156,26 @@ function renderHackathons() {
         let btnHTML = '';
         if (isCompleted) {
             btnHTML = `<button class="btn btn-outline btn-sm" disabled style="opacity: 0.5; border-color: var(--muted-text); color: var(--muted-text);">Concluded</button>`;
+        } else if (existingApp) {
+            if (existingApp.status === 'approved') {
+                btnHTML = `<button class="btn btn-primary btn-sm" onclick="window.location.href='student-hackathon-workspace.html?id=${hackId}'">
+                    Open Workspace <i class="fa-solid fa-arrow-right"></i>
+                </button>`;
+            } else if (existingApp.status === 'pending') {
+                btnHTML = `<button class="btn btn-outline btn-sm" disabled style="opacity: 0.7; border-color: #f59e0b; color: #f59e0b;">
+                    <i class="fa-solid fa-clock" style="margin-right: 4px;"></i>Applied (Pending)
+                </button>`;
+            } else if (existingApp.status === 'rejected') {
+                btnHTML = `<button class="btn btn-outline btn-sm" disabled style="opacity: 0.5; border-color: var(--danger-msg); color: var(--danger-msg);">
+                    <i class="fa-solid fa-xmark" style="margin-right: 4px;"></i>Rejected
+                </button>`;
+            } else if (existingApp.status === 'eliminated') {
+                btnHTML = `<button class="btn btn-outline btn-sm" disabled style="opacity: 0.5; border-color: var(--danger-msg); color: var(--danger-msg);">
+                    Eliminated
+                </button>`;
+            } else {
+                btnHTML = `<button class="btn btn-outline btn-sm" disabled style="opacity: 0.7;">Applied ✓</button>`;
+            }
         } else {
             btnHTML = `<button class="btn btn-primary btn-sm join-btn" 
                 data-id="${hackId}" 
@@ -144,6 +183,13 @@ function renderHackathons() {
                 data-name="${hack.name || 'Hackathon Event'}">
                 Apply Now
             </button>`;
+        }
+
+        let statusText = isCompleted ? 'Finished' : 'Accepting Applications';
+        let statusColor = isCompleted ? 'var(--danger-msg)' : 'var(--success-msg)';
+        if (existingApp && !isCompleted) {
+            if (existingApp.status === 'approved') { statusText = "You're In!"; statusColor = 'var(--success-msg)'; }
+            else if (existingApp.status === 'pending') { statusText = 'Application Pending'; statusColor = '#f59e0b'; }
         }
 
         card.innerHTML = `
@@ -164,9 +210,9 @@ function renderHackathons() {
                     <i class="fa-regular fa-calendar"></i> ${startStr} — ${endStr}
                 </p>
                 <div class="hackathon-meta">
-                    <div class="meta-item" style="color: ${isCompleted ? 'var(--danger-msg)' : 'var(--success-msg)'}; font-weight: 600;">
+                    <div class="meta-item" style="color: ${statusColor}; font-weight: 600;">
                         <i class="fa-solid fa-circle-dot" style="font-size: 0.6rem;"></i> 
-                        ${isCompleted ? 'Finished' : 'Accepting Applications'}
+                        ${statusText}
                     </div>
                     ${btnHTML}
                 </div>
@@ -183,20 +229,23 @@ function renderHackathons() {
     });
 }
 
-function openModal(hackId, clubId, hackName) {
+async function openModal(hackId, clubId, hackName) {
+    // Prevent duplicate applications
+    if (myApplications[hackId] && myApplications[hackId].status !== 'rejected') {
+        alert("You have already applied to this hackathon. You cannot apply again.");
+        return;
+    }
+    
     document.getElementById('formHackId').value = hackId;
     document.getElementById('formClubId').value = clubId;
-    document.getElementById('modalHackName').textContent = `Applying to: ${hackName}`; // visual
+    document.getElementById('modalHackName').textContent = `Applying to: ${hackName}`;
     
-    // Clear dynamic fields except leaderReg which might be cached
     document.getElementById('teamName').value = "";
     document.getElementById('teamSize').value = "1";
     document.getElementById('dynamicMembersContainer').innerHTML = "";
     document.getElementById('pptLink').value = "";
     
-    // Trigger member fields for default size of 1
     document.getElementById('teamSize').dispatchEvent(new Event('change'));
-    
     joinModal.style.display = "flex";
 }
 
@@ -235,6 +284,14 @@ joinForm.addEventListener('submit', async (e) => {
     const hackId = document.getElementById('formHackId').value;
     const clubId = document.getElementById('formClubId').value;
     
+    // Final duplicate check
+    if (myApplications[hackId] && myApplications[hackId].status !== 'rejected') {
+        alert("You have already applied to this hackathon.");
+        submitBtn.textContent = "Submit Application";
+        submitBtn.disabled = false;
+        return;
+    }
+    
     const teamName = document.getElementById('teamName').value.trim();
     const leaderReg = document.getElementById('leaderReg').value.trim();
     
@@ -248,7 +305,7 @@ joinForm.addEventListener('submit', async (e) => {
     });
 
     try {
-        await addDoc(collection(db, "hackathon_applications"), {
+        const docRef = await addDoc(collection(db, "hackathon_applications"), {
             hackathon_id: hackId,
             club_id: clubId,
             applicant_uid: auth.currentUser.uid,
@@ -261,8 +318,12 @@ joinForm.addEventListener('submit', async (e) => {
             submitted_at: serverTimestamp()
         });
         
+        // Update local cache immediately
+        myApplications[hackId] = { status: 'pending', appId: docRef.id, team_name: teamName };
+        
         alert("Application submitted successfully! The club will review it shortly.");
         closeModal();
+        renderHackathons(); // Re-render to update button states
         
     } catch(err) {
         console.error(err);

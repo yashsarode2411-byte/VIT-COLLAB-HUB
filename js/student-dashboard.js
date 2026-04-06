@@ -119,20 +119,29 @@ function handleFormsHooks() {
             e.preventDefault();
             const btn = document.getElementById('submitProjectBtn');
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Checking Admin...';
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Checking Admins...';
             btn.disabled = true;
 
             try {
-                // 1. Verify Admin Email
-                const adminEmail = document.getElementById('projAdminEmail').value.trim();
-                const qAdmin = query(collection(db, "users"), where("email", "==", adminEmail), where("role", "==", "admin"));
-                const adminSnap = await getDocs(qAdmin);
+                // 1. Parse and verify all admin emails
+                const adminEmailRaw = document.getElementById('projAdminEmail').value.trim();
+                const adminEmails = adminEmailRaw.split(',').map(e => e.trim()).filter(Boolean);
                 
-                if (adminSnap.empty) {
-                    alert("Invalid Admin Email. No active admin matches this address.");
+                if (adminEmails.length === 0) {
+                    alert("Please enter at least one admin email.");
                     return;
                 }
-                const adminId = adminSnap.docs[0].id;
+
+                const adminIds = [];
+                for (const email of adminEmails) {
+                    const qAdmin = query(collection(db, "users"), where("email", "==", email), where("role", "==", "admin"));
+                    const adminSnap = await getDocs(qAdmin);
+                    if (adminSnap.empty) {
+                        alert(`Invalid Admin Email: "${email}". No active admin matches this address.`);
+                        return;
+                    }
+                    adminIds.push(adminSnap.docs[0].id);
+                }
 
                 // 2. Generate 6-char Alpha-numeric code
                 const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -163,8 +172,10 @@ function handleFormsHooks() {
                     ppt_url: pptLink || null,
                     members_reg: membersReg,
                     team_members: [auth.currentUser.uid],
-                    admin_email: adminEmail,
-                    admin_uid: adminId,
+                    admin_email: adminEmails[0], // backward compat
+                    admin_emails: adminEmails,    // all admin emails
+                    admin_uids: adminIds,         // all admin UIDs
+                    approved_by: [],              // track which admins have approved
                     project_code: code,
                     status: "pending_mentor",
                     created_at: serverTimestamp(),
@@ -173,7 +184,8 @@ function handleFormsHooks() {
 
                 await addDoc(collection(db, "projects"), projData);
                 
-                alert(`Project request sent to Admin!\n\nYour Unique Invite Code is: ${code}\nShare this with members to allow them to join.`);
+                const adminList = adminEmails.join(', ');
+                alert(`Project request sent to ${adminEmails.length} Admin(s)!\n\nAdmins: ${adminList}\nYour Unique Invite Code is: ${code}\nShare this with members to allow them to join.`);
                 document.getElementById('newProjectModal').style.display = 'none';
                 newForm.reset();
                 
@@ -311,7 +323,8 @@ onAuthStateChanged(auth, async (user) => {
             // Fetch dashboard data concurrently
             await Promise.all([
                 fetchActiveProjects(user.uid),
-                fetchPendingInvites(user.uid)
+                fetchPendingInvites(user.uid),
+                fetchMyHackathons(user.uid)
             ]);
             
         } else {
@@ -407,7 +420,7 @@ async function fetchActiveProjects(uid) {
                     <button class="btn btn-primary" onclick="window.location.href='project-workspace.html?id=${projectId}'">
                         Open Workspace <i class="fa-solid fa-arrow-right"></i>
                     </button>
-                    <button class="btn btn-outline" onclick="window.openProjectSettings('${projectId}', '${project.leader_uid||''}')">
+                    <button class="btn btn-outline" onclick="window.location.href='project-workspace.html?id=${projectId}&tab=settings'">
                         <i class="fa-solid fa-gear"></i> Settings
                     </button>
                 </div>
@@ -424,66 +437,8 @@ async function fetchActiveProjects(uid) {
 /**
  * Handles Project Settings / Deletion logic for project leaders.
  */
-window.openProjectSettings = async (projectId, leaderUid) => {
-    if (!auth.currentUser || auth.currentUser.uid !== leaderUid) {
-        alert("Only the Project Leader can manage or delete this project.");
-        return;
-    }
-    
-    if(confirm("Are you sure you want to permanently delete this project? This action cannot be undone.")) {
-        try {
-            // Fetch project to see if we need to revert stats
-            const projSnap = await getDoc(doc(db, "projects", projectId));
-            
-            if(projSnap.exists()) {
-                const pData = projSnap.data();
-                
-                // Block Deletion if mentored
-                if (pData.mentor_id) {
-                    await updateDoc(doc(db, "projects", projectId), {
-                        deletion_requested: true,
-                        deletion_requested_by: auth.currentUser ? auth.currentUser.uid : 'unknown'
-                    });
-                    alert("A mentor is actively assigned. A deletion request has been sent to them for approval.");
-                    if (auth.currentUser) fetchActiveProjects(auth.currentUser.uid);
-                    return;
-                }
-            }
-
-            // Delete project first so if it fails, no stats are falsely reversed
-            await deleteDoc(doc(db, "projects", projectId));
-            
-            if(projSnap.exists()) {
-                const pData = projSnap.data();
-                if(pData.status === "completed") {
-                    const pRating = pData.project_rating || pData.rating || 0;
-                    const members = pData.team_members || [];
-                    const indRatings = pData.individual_ratings || {};
-                    
-                    // Revert stats for all members (fails silently if permission denied)
-                    for(const uid of members) {
-                        const iRating = indRatings[uid] || pRating;
-                        try {
-                            await updateDoc(doc(db, "users", uid), {
-                                total_stars: increment(-iRating),
-                                project_stars: increment(-pRating),
-                                total_reviews: increment(-1),
-                                completed_projects: increment(-1)
-                            });
-                        } catch(e) {
-                            console.warn("Skipping member stats rollback due to permissions.", e);
-                        }
-                    }
-                }
-            }
-            
-            alert("Project successfully deleted.");
-            if (auth.currentUser) fetchActiveProjects(auth.currentUser.uid); // reload
-        } catch(e) {
-            console.error("Project deletion error:", e);
-            alert("Failed to delete project. Please check if you have required permissions.");
-        }
-    }
+window.openProjectSettings = (projectId) => {
+    window.location.href = `project-workspace.html?id=${projectId}&tab=settings`;
 };
 
 /**
@@ -550,6 +505,95 @@ function handleInviteAction(inviteId, action) {
 function showToast(message, type = "info") {
     // In production, integrate a proper toast library or custom logic
     console.log(`[Toast - ${type.toUpperCase()}]: ${message}`);
+}
+
+/**
+ * Fetches and renders the student's hackathon applications on the dashboard.
+ */
+async function fetchMyHackathons(uid) {
+    const container = document.getElementById('myHackathonsContainer');
+    if (!container) return;
+    
+    try {
+        const q = query(collection(db, "hackathon_applications"), where("applicant_uid", "==", uid));
+        const appSnap = await getDocs(q);
+        
+        if (appSnap.empty) {
+            container.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; color: var(--muted-text); padding: 30px;">
+                    <i class="fa-solid fa-trophy" style="font-size: 2rem; opacity: 0.3; margin-bottom: 10px; display: block;"></i>
+                    <p>You haven't joined any hackathons yet.</p>
+                    <a href="student-hackathons.html" style="color: var(--primary-blue); font-weight: 600; text-decoration: none; margin-top: 8px; display: inline-block;">
+                        Browse Hackathons <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>`;
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        for (const docSnap of appSnap.docs) {
+            const appData = docSnap.data();
+            
+            // Fetch hackathon details
+            let hackName = 'Hackathon';
+            let hackDesc = '';
+            try {
+                const hackDoc = await getDoc(doc(db, "hackathons", appData.hackathon_id));
+                if (hackDoc.exists()) {
+                    const hd = hackDoc.data();
+                    hackName = hd.name || 'Hackathon';
+                    hackDesc = hd.description || '';
+                }
+            } catch(e) { /* skip */ }
+            
+            // Status badge
+            const statusColors = {
+                'pending': { bg: 'rgba(245,158,11,0.1)', color: '#f59e0b', text: 'Pending' },
+                'approved': { bg: 'rgba(16,185,129,0.1)', color: '#10b981', text: 'Active' },
+                'rejected': { bg: 'rgba(239,68,68,0.1)', color: '#ef4444', text: 'Rejected' },
+                'eliminated': { bg: 'rgba(239,68,68,0.1)', color: '#ef4444', text: 'Eliminated' }
+            };
+            const st = statusColors[appData.status] || statusColors['pending'];
+            
+            const canOpenWorkspace = appData.status === 'approved';
+            
+            const card = document.createElement('div');
+            card.className = 'card project-card';
+            card.innerHTML = `
+                <div class="project-info">
+                    <div class="project-header">
+                        <h3 class="project-title">${hackName}</h3>
+                        <span style="background: ${st.bg}; color: ${st.color}; font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 700;">${st.text}</span>
+                    </div>
+                    <p style="font-size: 13px; color: var(--muted-text); margin: 8px 0; line-height: 1.4;">${hackDesc.substring(0, 80)}${hackDesc.length > 80 ? '...' : ''}</p>
+                    <div class="project-tech-stack">
+                        <span class="tech-badge" style="background: rgba(13,110,253,0.08); color: var(--primary-blue);">
+                            <i class="fa-solid fa-users" style="margin-right: 4px;"></i>${appData.team_name || 'Your Team'}
+                        </span>
+                        <span class="tech-badge" style="background: rgba(16,185,129,0.08); color: #10b981;">
+                            Round ${appData.current_round || 0}
+                        </span>
+                    </div>
+                </div>
+                <div class="project-actions" style="display: flex; gap: 10px; padding: 15px 20px; border-top: 1px solid var(--border-color);">
+                    ${canOpenWorkspace 
+                        ? `<button class="btn btn-primary" onclick="window.location.href='student-hackathon-workspace.html?id=${appData.hackathon_id}'">
+                            Open Workspace <i class="fa-solid fa-arrow-right"></i>
+                        </button>`
+                        : `<button class="btn btn-outline" disabled style="opacity: 0.6;">
+                            <i class="fa-solid fa-clock" style="margin-right: 4px;"></i>${st.text}
+                        </button>`
+                    }
+                </div>
+            `;
+            container.appendChild(card);
+        }
+        
+    } catch (err) {
+        console.error("Fetch hackathons error:", err);
+        container.innerHTML = '<p style="color: var(--muted-text); padding: 20px;">Failed to load hackathons.</p>';
+    }
 }
 
 console.log("JS LOADED SUCCESSFULLY");
