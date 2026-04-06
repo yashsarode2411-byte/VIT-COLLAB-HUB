@@ -62,21 +62,11 @@ function initSharedUI() {
         });
     }
 
-    // Side Chat Panel Toggle
+    // Messages Page Link
     const fabMessages = document.getElementById('fabMessages');
-    const sideChatPanel = document.getElementById('sideChatPanel');
-    const sideChatOverlay = document.getElementById('sideChatOverlay');
-    const closeChatPanelBtn = document.getElementById('closeChatPanelBtn');
 
-    if (fabMessages && sideChatPanel && sideChatOverlay && closeChatPanelBtn) {
-        const toggleChatPanel = (show) => {
-            sideChatPanel.style.right = show ? '0' : '-450px';
-            sideChatOverlay.style.display = show ? 'block' : 'none';
-        };
-
-        fabMessages.addEventListener('click', () => toggleChatPanel(true));
-        closeChatPanelBtn.addEventListener('click', () => toggleChatPanel(false));
-        sideChatOverlay.addEventListener('click', () => toggleChatPanel(false));
+    if (fabMessages) {
+        fabMessages.addEventListener('click', () => { window.location.href = 'messages.html'; });
     }
 }
 
@@ -148,7 +138,7 @@ function renderMembersList(members) {
 
             <div class="member-actions">
                 <button class="btn btn-outline btn-sm" style="flex: 1;" onclick="window.viewMemberProfile('${member.id}')">View Profile</button>
-                <button class="btn btn-primary btn-sm" style="flex: 1;" onclick="alert('Messaging feature coming soon!')"><i class="fa-solid fa-message" style="margin-right: 4px;"></i>Message</button>
+                <button class="btn btn-primary btn-sm" style="flex: 1;" onclick="window.location.href='messages.html?userId=${member.id}'"><i class="fa-solid fa-message" style="margin-right: 4px;"></i>Message</button>
             </div>
         `;
         grid.appendChild(card);
@@ -490,6 +480,14 @@ window.viewMemberProfile = (userId) => {
     if (viewFullBtn) {
         viewFullBtn.onclick = () => {
             window.location.href = `profile-view.html?uid=${userId}`;
+        };
+    }
+
+    // Set Message link
+    const modalMsgBtn = document.getElementById('modalMessageBtn');
+    if (modalMsgBtn) {
+        modalMsgBtn.onclick = () => {
+            window.location.href = `messages.html?userId=${userId}`;
         };
     }
 

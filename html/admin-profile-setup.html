@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIT COLLAB HUB - Admin Profile Setup</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/login.css">
     <link rel="stylesheet" href="/css/global.css">
 </head>
@@ -20,7 +22,10 @@
                 <span class="header-subtitle">(Vellore Campus)</span>
             </div>
         </div>
-        <button id="logout-btn" class="btn-logout">Logout</button>
+        <div class="header-actions" style="display: flex; align-items: center; gap: 15px;">
+            <button id="themeToggleBtn" class="theme-toggle" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem; margin-right: 15px;" title="Toggle Dark Mode"><i class="fa-solid fa-moon"></i></button>
+            <button id="logout-btn" class="btn-logout">Logout</button>
+        </div>
     </header>
 
     <!-- MAIN CONTENT -->

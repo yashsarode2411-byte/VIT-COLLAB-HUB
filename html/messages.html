@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - VIT Collab Hub</title>
+
+    <!-- Google Fonts  -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/messages.css">
+</head>
+
+<body>
+
+    <div class="messages-page-wrapper">
+        <!-- Top Navigation Bar -->
+        <header class="top-navbar">
+            <a href="javascript:history.back()" class="nav-brand" style="text-decoration: none;">
+                <img src="https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Vellore_Institute_of_Technology_seal_2017.svg/1200px-Vellore_Institute_of_Technology_seal_2017.svg.png"
+                    alt="VIT Logo" class="nav-logo"
+                    style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: white; padding: 2px;">
+                <span class="nav-title">VIT COLLAB HUB</span>
+            </a>
+
+            <!-- Center Name -->
+            <div style="position: absolute; left: 50%; transform: translateX(-50%);">
+                <span id="nav-user-name"
+                    style="color: white; font-weight: 600; font-size: 15px; letter-spacing: 0.5px;">Messages</span>
+            </div>
+
+            <div class="header-actions" style="display: flex; align-items: center; gap: 15px;">
+                <button id="themeToggleBtn" class="theme-toggle"
+                    style="background: none; border: none; color: inherit; cursor: pointer; font-size: 1.2rem; margin-right: 15px;"
+                    title="Toggle Dark Mode"><i class="fa-solid fa-moon"></i></button>
+                <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                    alt="Avatar" id="nav-avatar"
+                    style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #fff;">
+            </div>
+        </header>
+
+        <!-- Messaging Main Container -->
+        <div class="messaging-container">
+            <!-- Left Sidebar -->
+            <div class="conversations-sidebar">
+                <div class="conversations-header">
+                    Conversations
+                </div>
+                <div class="conversations-list" id="conversationsList">
+                    <!-- Conversations will be injected here -->
+                    <div style="padding: 20px; text-align: center; color: var(--msg-text-muted);">
+                        Loading conversations...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="chat-panel" id="chatPanel">
+                <!-- Empty State -->
+                <div class="chat-empty-state" id="chatEmptyState">
+                    <i class="fa-regular fa-comments" style="font-size: 4rem; opacity: 0.5; margin-bottom: 20px;"></i>
+                    <h2>Select a conversation</h2>
+                    <p>Choose an existing conversation or start a new one.</p>
+                </div>
+
+                <!-- Chat Header -->
+                <div class="chat-header" id="chatHeader" style="display: none;">
+                    <img src="" alt="User" class="chat-header-avatar" id="chatHeaderAvatar">
+                    <div class="chat-header-info">
+                        <h3 class="chat-header-name" id="chatHeaderName">User</h3>
+                    </div>
+                </div>
+
+                <!-- Chat Messages -->
+                <div class="messages-list" id="messagesList" style="display: none;">
+                    <!-- Messages will be injected here -->
+                </div>
+
+                <!-- Chat Input Area -->
+                <div class="chat-input-area" id="chatInputArea" style="display: none;">
+                    <div class="chat-input-wrapper">
+                        <textarea class="chat-input" id="messageInput" placeholder="Type a message..." rows="1"></textarea>
+                    </div>
+                    <button class="send-btn" id="sendMessageBtn" disabled>
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Require Firebase Scripts and Module Logic -->
+    <script type="module" src="../js/firebase-config.js"></script>
+    <script type="module" src="../js/auth.js"></script>
+    <script src="../js/theme.js"></script>
+    <script type="module" src="../js/messages.js"></script>
+
+</body>
+</html>

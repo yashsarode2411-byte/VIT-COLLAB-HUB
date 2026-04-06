@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIT COLLAB HUB - Admin Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/global.css">
     <link rel="stylesheet" href="/css/login.css">
     <link rel="stylesheet" href="/css/dashboard.css">
@@ -55,7 +57,7 @@
         </div>
 
         <div class="header-actions">
-            <button id="themeToggleBtn" class="theme-toggle" style="background: none; border: none; color: inherit; cursor: pointer; font-size: 1.2rem; margin-right: 15px;" title="Toggle Dark Mode"><i class="fa-solid fa-moon"></i></button>
+            <button id="themeToggleBtn" class="theme-toggle" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem; margin-right: 15px;" title="Toggle Dark Mode"><i class="fa-solid fa-moon"></i></button>
             <button id="logout-btn" class="btn-logout">Logout</button>
         </div>
     </header>
@@ -80,6 +82,12 @@
             </span>
             <span>Profile</span>
         </div>
+        <div id="tab-members" class="sub-nav-link" onclick="window.location.href='admin-browse-members.html'">
+            <span class="icon-btn nav-icon" style="background-color: #0dcaf0; color: #005a6e; pointer-events: none;">
+                <i class="fa-solid fa-users"></i>
+            </span>
+            <span>Browse Members</span>
+        </div>
     </div>
 
     <!-- DASHBOARD VIEW -->
@@ -94,7 +102,7 @@
         <div class="dashboard-grid admin-grid">
             <!-- Left Column: Pending Mentor Requests -->
             <div class="login-card" style="max-width: none; border-top: 4px solid #e53935; height: 100%; display: flex; flex-direction: column;">
-                <div class="card-header" style="background: white; padding: 20px; border-bottom: 1px solid var(--border-accent); flex-direction: row; justify-content: space-between;">
+                <div class="card-header" style="background: var(--card-bg); padding: 20px; border-bottom: 1px solid var(--border-accent); flex-direction: row; justify-content: space-between;">
                     <h3 style="margin: 0; font-size: 18px; color: var(--dark-text);">Pending Mentor Requests</h3>
                     <span id="pending-count" style="background: #e53935; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 700;">0</span>
                 </div>
@@ -107,11 +115,11 @@
 
             <!-- Right Column: Active Mentored Projects -->
             <div class="login-card" style="max-width: none; border-top: 4px solid var(--success-msg); height: 100%; display: flex; flex-direction: column;">
-                <div class="card-header" style="background: white; padding: 20px; border-bottom: 1px solid var(--border-accent); flex-direction: row; justify-content: space-between;">
+                <div class="card-header" style="background: var(--card-bg); padding: 20px; border-bottom: 1px solid var(--border-accent); flex-direction: row; justify-content: space-between;">
                     <h3 style="margin: 0; font-size: 18px; color: var(--dark-text);">Active Mentored Projects</h3>
                     <span id="active-count" style="background: var(--success-msg); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 700;">0</span>
                 </div>
-                <div class="form-middle" style="padding: 20px; background: #f8f9fa; flex: 1;">
+                <div class="form-middle" style="padding: 20px; background: transparent; flex: 1;">
                     <div id="active-projects-container" class="item-list">
                         <p style="color: var(--muted-text); font-size: 14px; text-align: center;">You are not actively mentoring any projects.</p>
                     </div>
@@ -138,29 +146,29 @@
     <!-- PROFILE VIEW -->
     <main id="view-profile" class="main-container" style="display: none; padding-top: 5px;">
         <div class="login-card" style="max-width: 600px; margin: 0 auto; border-top: 4px solid var(--primary-blue);">
-            <div class="card-header" style="background: white; padding: 20px; border-bottom: 1px solid var(--border-accent);">
+            <div class="card-header" style="background: var(--card-bg); padding: 20px; border-bottom: 1px solid var(--border-accent);">
                 <h3 style="margin: 0; font-size: 20px; color: var(--dark-text);">Admin Profile Details</h3>
             </div>
             
             <div class="form-middle" style="padding: 25px;">
                 <div class="input-group" style="margin-bottom: 15px;">
                     <label style="font-size: 13px; font-weight: 500; color: var(--dark-text); margin-bottom: 4px; display: block;">Employee / Auth ID</label>
-                    <input type="text" id="view-emp-id" class="input-field" readonly style="background-color: #e9ecef; cursor: not-allowed; font-weight: 600; color: var(--primary-blue);">
+                    <input type="text" id="view-emp-id" class="input-field" readonly style="cursor: not-allowed; font-weight: 600; color: var(--primary-blue);">
                 </div>
 
                 <div class="input-group" style="margin-bottom: 15px;">
                     <label style="font-size: 13px; font-weight: 500; color: var(--dark-text); margin-bottom: 4px; display: block;">Faculty Name</label>
-                    <input type="text" id="view-name" class="input-field" readonly style="background-color: #f8f9fa; cursor: default;">
+                    <input type="text" id="view-name" class="input-field" readonly style="cursor: default;">
                 </div>
 
                 <div class="input-group" style="margin-bottom: 15px;">
                     <label style="font-size: 13px; font-weight: 500; color: var(--dark-text); margin-bottom: 4px; display: block;">Contact Email</label>
-                    <input type="text" id="view-email" class="input-field" readonly style="background-color: #f8f9fa; cursor: default;">
+                    <input type="text" id="view-email" class="input-field" readonly style="cursor: default;">
                 </div>
 
                 <div class="input-group" style="margin-bottom: 5px;">
                     <label style="font-size: 13px; font-weight: 500; color: var(--dark-text); margin-bottom: 4px; display: block;">School / Department</label>
-                    <input type="text" id="view-school" class="input-field" readonly style="background-color: #f8f9fa; cursor: default;">
+                    <input type="text" id="view-school" class="input-field" readonly style="cursor: default;">
                 </div>
             </div>
         </div>
@@ -176,12 +184,12 @@
             <p style="color: var(--muted-text); font-size: 14px; margin-bottom: 20px;">Evaluate the team's performance. This validates their project for student profiles.</p>
             
             <!-- Project Rating Section -->
-            <div style="background: #f0f7ff; border: 1px solid #d0e4ff; border-radius: 10px; padding: 18px; margin-bottom: 18px;">
+            <div style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 18px; margin-bottom: 18px;">
                 <label style="font-size: 14px; font-weight: 600; display: block; margin-bottom: 8px; color: var(--primary-blue);">
                     <i class="fa-solid fa-folder-open" style="margin-right: 6px;"></i> Project Rating
                 </label>
                 <p style="font-size: 12px; color: var(--muted-text); margin-bottom: 10px;">Rate the overall project quality, innovation, and execution.</p>
-                <select id="project-rating" class="input-field" style="cursor: pointer;">
+                <select id="project-rating" class="input-field" style="cursor: pointer; background-color: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color);">
                     <option value="5">⭐⭐⭐⭐⭐ 5 Stars — Exceptional</option>
                     <option value="4">⭐⭐⭐⭐ 4 Stars — Great</option>
                     <option value="3">⭐⭐⭐ 3 Stars — Good</option>
@@ -191,7 +199,7 @@
             </div>
 
             <!-- Individual Rating Section -->
-            <div style="background: #f0fff4; border: 1px solid #c3e6cb; border-radius: 10px; padding: 18px; margin-bottom: 20px;">
+            <div style="background: var(--sub-nav-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 18px; margin-bottom: 20px;">
                 <label style="font-size: 14px; font-weight: 600; display: block; margin-bottom: 8px; color: #28a745;">
                     <i class="fa-solid fa-users" style="margin-right: 6px;"></i> Individual Contribution Ratings
                 </label>

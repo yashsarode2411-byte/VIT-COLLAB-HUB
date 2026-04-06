@@ -49,21 +49,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Side Chat Panel Toggle
+    // Messages Page Link
     const fabMessages = document.getElementById('fabMessages');
-    const sideChatPanel = document.getElementById('sideChatPanel');
-    const sideChatOverlay = document.getElementById('sideChatOverlay');
-    const closeChatPanelBtn = document.getElementById('closeChatPanelBtn');
 
-    if (fabMessages && sideChatPanel && sideChatOverlay && closeChatPanelBtn) {
-        const toggleChatPanel = (show) => {
-            sideChatPanel.style.right = show ? '0' : '-450px';
-            sideChatOverlay.style.display = show ? 'block' : 'none';
-        };
-
-        fabMessages.addEventListener('click', () => toggleChatPanel(true));
-        closeChatPanelBtn.addEventListener('click', () => toggleChatPanel(false));
-        sideChatOverlay.addEventListener('click', () => toggleChatPanel(false));
+    if (fabMessages) {
+        fabMessages.addEventListener('click', () => { window.location.href = 'messages.html'; });
     }
 
     // Logout Button

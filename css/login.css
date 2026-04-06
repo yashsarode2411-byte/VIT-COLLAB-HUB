@@ -408,7 +408,6 @@ main {
     --input-border: #30363d;
     --dark-text: #f0f6fc;
     --muted-text: #8b949e;
-    --cyan-accent: #1e3a8a; /* Makes gradients darker */
 }
 
 /* Update hash background for dark mode */
@@ -420,12 +419,10 @@ main {
 
 /* Header & Footer adjustments */
 [data-theme="dark"] header {
-    background: linear-gradient(to right, #0d1117, #161b22);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     border-bottom: 1px solid var(--border-accent);
 }
 [data-theme="dark"] footer {
-    background: linear-gradient(to right, #0d1117, #161b22);
     border-top: 1px solid var(--border-accent);
 }
 

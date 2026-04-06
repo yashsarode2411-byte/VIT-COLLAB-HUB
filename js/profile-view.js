@@ -353,7 +353,7 @@ async function loadProfile(uid) {
 
         // ─── Message Button ───
         document.getElementById('btnMessage').addEventListener('click', () => {
-            alert('Messaging feature coming soon!');
+            window.location.href = `messages.html?userId=${uid}`;
         });
 
         // ─── Share Button ───
