@@ -11,6 +11,11 @@ const pendingContainer = document.getElementById('mentor-requests-container');
 const activeContainer = document.getElementById('active-projects-container');
 const pendingCount = document.getElementById('pending-count');
 const activeCount = document.getElementById('active-count');
+const fabMessages = document.getElementById('fabMessages');
+
+if (fabMessages) {
+    fabMessages.addEventListener('click', () => { window.location.href = 'messages.html'; });
+}
 
 let currentUser = null;
 let currentProfile = null;
@@ -131,7 +136,8 @@ function loadMentorRequests() {
                     <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px;">Invite Code: <strong style="color: var(--primary-blue);">${project.project_code || 'N/A'}</strong></p>
                     <p style="font-size: 0.8rem; margin-top: 8px;">Presentation: ${pptHtml}</p>
                 </div>
-                <div class="card-actions">
+                <div class="card-actions" style="display: flex; gap: 10px;">
+                    ${project.leader_uid ? `<button class="btn-secondary" onclick="window.viewMemberProfile('${project.leader_uid}')"><i class="fa-solid fa-user" style="margin-right: 4px;"></i> View Profile</button>` : ''}
                     <button class="btn-secondary" onclick="window.acceptMentor('${docSnap.id}')">Accept</button>
                     <button class="btn-secondary" style="background: var(--danger); color: white;" onclick="window.declineMentor('${docSnap.id}')">Decline</button>
                 </div>
@@ -170,6 +176,7 @@ function loadActiveProjects() {
                     <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px;">Invite Code: <strong style="color: var(--primary-blue);">${project.project_code || 'N/A'}</strong></p>
                 </div>
                 <div class="card-actions" style="display: flex; gap: 10px;">
+                    ${project.leader_uid ? `<button class="btn-secondary" onclick="window.viewMemberProfile('${project.leader_uid}')"><i class="fa-solid fa-user" style="margin-right: 4px;"></i> View Profile</button>` : ''}
                     <button class="btn-secondary" onclick="window.location.href='/html/project-workspace.html?id=${docSnap.id}'">Workspace</button>
                     <button class="btn-secondary" style="background: var(--primary-blue); color: white;" onclick="window.openCompletionModal('${docSnap.id}', '${teamArrayStr}')">✔ Finish</button>
                 </div>
@@ -201,6 +208,93 @@ window.declineMentor = async (projectId) => {
         alert("Failed to decline project. Check permissions.");
     }
 };
+
+window.viewMemberProfile = async (userId) => {
+    const profileOverlay = document.getElementById('profileModalOverlay');
+    if (!profileOverlay) return;
+
+    try {
+        const memSnap = await getDoc(doc(db, "users", userId));
+        if (!memSnap.exists()) {
+            showToast("User profile not found.", "error");
+            return;
+        }
+        const mem = memSnap.data();
+
+        document.getElementById('modalAvatar').src = mem.avatar_url || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+        document.getElementById('modalName').textContent = mem.name || "Student";
+        document.getElementById('modalBranch').textContent = mem.branch || "Branch TBD";
+
+        if (mem.total_reviews && mem.total_reviews > 0) {
+            const rating = (mem.total_stars / mem.total_reviews).toFixed(1);
+            document.getElementById('modalRatingContainer').innerHTML = `<i class="fa-solid fa-star" style="color: #f59e0b; margin-right: 6px;"></i><span id="modalRating">${rating}</span> / 5.0 Rating`;
+        } else {
+            document.getElementById('modalRatingContainer').innerHTML = `No Rating`;
+        }
+        document.getElementById('modalRatingContainer').style.display = 'inline-block';
+
+        const top3Skills = Array.isArray(mem.top3_skills) && mem.top3_skills.length > 0
+            ? mem.top3_skills
+            : (Array.isArray(mem.skills) ? mem.skills.slice(0, 3) : []);
+
+        const topPillsHTML = top3Skills.map(skill => `<span class="skill-pill" style="display:inline-block; padding:4px 10px; border-radius:12px; font-size:0.8rem; font-weight:500; background:rgba(13,110,253,0.1); color:var(--primary-blue); margin-right:6px; margin-bottom:6px;">${skill}</span>`).join('');
+        document.getElementById('modalTopSkills').innerHTML = topPillsHTML || '<span class="text-muted" style="font-size:0.8rem;">No top skills</span>';
+
+        const linksContainer = document.getElementById('modalLinks');
+        let linksHTML = '';
+        if (mem.github) {
+            linksHTML += `<a href="${mem.github}" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: #24292e; color: white; border-radius: 10px; text-decoration: none; font-size: 13px; font-weight: 600; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                <i class="fa-brands fa-github" style="font-size: 16px;"></i> GitHub
+            </a>`;
+        }
+        if (mem.linkedin) {
+            linksHTML += `<a href="${mem.linkedin}" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: #0a66c2; color: white; border-radius: 10px; text-decoration: none; font-size: 13px; font-weight: 600; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                <i class="fa-brands fa-linkedin" style="font-size: 16px;"></i> LinkedIn
+            </a>`;
+        }
+        if (!linksHTML) {
+            linksHTML = '<span class="text-muted" style="font-size: 0.8rem;">No profile links available</span>';
+        }
+        linksContainer.innerHTML = linksHTML;
+
+        const viewFullBtn = document.getElementById('viewFullProfileBtn');
+        if (viewFullBtn) {
+            viewFullBtn.onclick = () => {
+                window.location.href = `profile-view.html?uid=${userId}`;
+            };
+        }
+
+        const modalMsgBtn = document.getElementById('modalMessageBtn');
+        if (modalMsgBtn) {
+            modalMsgBtn.onclick = () => {
+                window.location.href = `messages.html?userId=${userId}`;
+            };
+        }
+
+        profileOverlay.style.display = 'flex';
+    } catch(err) {
+        console.error("Error fetching user profile", err);
+        alert("Failed to load user profile");
+    }
+};
+
+// Modal Close logic
+document.addEventListener("DOMContentLoaded", () => {
+    const closeBtn = document.getElementById('closeProfileModalBtn');
+    if(closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            document.getElementById('profileModalOverlay').style.display = 'none';
+        });
+    }
+    const overlay = document.getElementById('profileModalOverlay');
+    if(overlay) {
+        overlay.addEventListener('click', (e) => {
+            if(e.target === overlay) {
+                overlay.style.display = 'none';
+            }
+        });
+    }
+});
 
 window.openCompletionModal = async (projectId, teamArrayStr) => {
     completingProjectId = projectId;

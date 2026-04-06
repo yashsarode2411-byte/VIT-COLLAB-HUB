@@ -54,6 +54,14 @@ onAuthStateChanged(auth, async (user) => {
             if (navAvatar && currentUserData.avatar_url) {
                 navAvatar.src = currentUserData.avatar_url;
             }
+            
+            // Dynamic Dashboard Button Logic based on Role
+            const dashLinkBtn = document.getElementById("dashLinkBtn");
+            if (dashLinkBtn) {
+                dashLinkBtn.onclick = () => {
+                    window.location.href = currentUserData.role === 'admin' ? "admin-dashboard.html" : "student-dashboard.html";
+                };
+            }
         }
     } catch (e) {
         console.error("Error fetching user data", e);
@@ -298,6 +306,22 @@ function openConversation(convId, otherUser) {
     
     chatHeaderAvatar.src = otherUser.avatar;
     chatHeaderName.textContent = otherUser.name;
+    
+    // Wire up View Profile Button inside Chat Header
+    const chatViewProfileBtn = document.getElementById("chatViewProfileBtn");
+    if (chatViewProfileBtn) {
+        chatViewProfileBtn.onclick = () => {
+            window.location.href = `profile-view.html?uid=${otherUser.id}`;
+        };
+    }
+    
+    // Wire up the entire user avatar info block as clickable
+    const chatProfileClickArea = document.getElementById("chatProfileClickArea");
+    if (chatProfileClickArea) {
+        chatProfileClickArea.onclick = () => {
+            window.location.href = `profile-view.html?uid=${otherUser.id}`;
+        };
+    }
     
     // Re-render conversation list active highlight
     document.querySelectorAll('.conversation-item').forEach(el => {

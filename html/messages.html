@@ -25,12 +25,15 @@
     <div class="messages-page-wrapper">
         <!-- Top Navigation Bar -->
         <header class="top-navbar">
-            <a href="javascript:history.back()" class="nav-brand" style="text-decoration: none;">
-                <img src="https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Vellore_Institute_of_Technology_seal_2017.svg/1200px-Vellore_Institute_of_Technology_seal_2017.svg.png"
-                    alt="VIT Logo" class="nav-logo"
-                    style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: white; padding: 2px;">
-                <span class="nav-title">VIT COLLAB HUB</span>
-            </a>
+            <div style="display: flex; align-items: center; gap: 25px;">
+                <a href="javascript:history.back()" class="nav-brand" style="text-decoration: none; display: flex; align-items: center;">
+                    <img src="https://upload.wikimedia.org/wikipedia/en/thumb/c/c5/Vellore_Institute_of_Technology_seal_2017.svg/1200px-Vellore_Institute_of_Technology_seal_2017.svg.png"
+                        alt="VIT Logo" class="nav-logo"
+                        style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: white; padding: 2px;">
+                    <span class="nav-title" style="margin-left: 10px;">VIT COLLAB HUB</span>
+                </a>
+                <button id="dashLinkBtn" class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.6); padding: 4px 14px; font-size: 0.85rem; border-width: 1px;"><i class="fa-solid fa-arrow-left" style="margin-right: 6px;"></i> Dashboard</button>
+            </div>
 
             <!-- Center Name -->
             <div style="position: absolute; left: 50%; transform: translateX(-50%);">
@@ -73,11 +76,14 @@
                 </div>
 
                 <!-- Chat Header -->
-                <div class="chat-header" id="chatHeader" style="display: none;">
-                    <img src="" alt="User" class="chat-header-avatar" id="chatHeaderAvatar">
-                    <div class="chat-header-info">
-                        <h3 class="chat-header-name" id="chatHeaderName">User</h3>
+                <div class="chat-header" id="chatHeader" style="display: none; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 15px; padding: 5px;">
+                        <img src="" alt="User" class="chat-header-avatar" id="chatHeaderAvatar">
+                        <div class="chat-header-info">
+                            <h3 class="chat-header-name" id="chatHeaderName" style="margin: 0;">User</h3>
+                        </div>
                     </div>
+                    <button id="chatViewProfileBtn" class="btn btn-outline" style="padding: 6px 14px; font-size: 0.85rem; border-width: 1px;"><i class="fa-solid fa-user" style="margin-right: 6px;"></i> View Profile</button>
                 </div>
 
                 <!-- Chat Messages -->

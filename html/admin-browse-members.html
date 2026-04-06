@@ -7,8 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/global.css">
     <link rel="stylesheet" href="/css/login.css">
+    <link rel="stylesheet" href="/css/global.css">
     <link rel="stylesheet" href="/css/dashboard.css">
     <style>
         .main-container {
@@ -24,11 +24,7 @@
             gap: 15px;
         }
         
-        /* Make sub-nav tabs equal width */
-        .sub-navbar .sub-nav-link {
-            width: 180px;
-            text-align: center;
-        }
+        
 
         /* Browse Members Specific Styles */
         .members-container {
@@ -561,6 +557,11 @@
             </div>
         </div>
     </div>
+
+    <!-- Floating Messages Button -->
+    <button id="fabMessages" style="position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; border-radius: 50%; background: var(--primary-blue); color: #fff; border: none; box-shadow: 0 10px 25px rgba(13, 110, 253, 0.4); font-size: 1.8rem; cursor: pointer; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: var(--transition);">
+        <i class="fa-solid fa-message"></i>
+    </button>
 
     <!-- Scripting -->
     <!-- Using the EXACT same JS logic from the student section as per requirements -->

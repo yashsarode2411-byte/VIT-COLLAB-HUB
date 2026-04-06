@@ -55,6 +55,7 @@ body, html {
     flex: 1;
     overflow: hidden;
     background-color: var(--card-bg);
+    margin-top: 60px; /* Offset for fixed navbar */
 }
 
 /* Left Sidebar - Conversations List */
