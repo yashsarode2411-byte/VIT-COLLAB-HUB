@@ -542,12 +542,15 @@ async function fetchMyHackathons(uid) {
             let hackDesc = '';
             try {
                 const hackDoc = await getDoc(doc(db, "hackathons", appData.hackathon_id));
-                if (hackDoc.exists()) {
-                    const hd = hackDoc.data();
-                    hackName = hd.name || 'Hackathon';
-                    hackDesc = hd.description || '';
+                if (!hackDoc.exists()) {
+                    continue; // Skip rendering if the hackathon was deleted
                 }
-            } catch(e) { /* skip */ }
+                const hd = hackDoc.data();
+                hackName = hd.name || 'Hackathon';
+                hackDesc = hd.description || '';
+            } catch(e) {
+                continue; // Skip if there's an error fetching the hackathon document
+            }
             
             // Status badge
             const statusColors = {
