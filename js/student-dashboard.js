@@ -380,9 +380,11 @@ async function fetchActiveProjects(uid) {
             const extraPills = techStack.length > 3 ? `<span class="tech-pill">+${techStack.length - 3}</span>` : '';
 
             const teamCount = project.team_members ? project.team_members.length : 1;
+            const avatarColors = ['#0d6efd', '#6f42c1', '#198754', '#dc3545', '#fd7e14', '#20c997'];
             let avatarsHTML = '';
-            for(let i=1; i<=Math.min(3, teamCount); i++) {
-                avatarsHTML += `<img src="https://i.pravatar.cc/150?img=${10+i}" alt="Team member" class="team-avatar" title="Team Member">`;
+            for(let i=0; i<Math.min(3, teamCount); i++) {
+                const color = avatarColors[i % avatarColors.length];
+                avatarsHTML += `<div class="team-avatar" style="width:32px;height:32px;border-radius:50%;background:${color};display:inline-flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:12px;border:2px solid white;margin-left:${i > 0 ? '-8px' : '0'};">${i+1}</div>`;
             }
             if(teamCount > 3) {
                 avatarsHTML += `<div class="avatar-more">+${teamCount - 3}</div>`;

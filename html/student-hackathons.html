@@ -198,10 +198,15 @@
         <div class="page-header">
             <h1><i class="fa-solid fa-trophy" style="color: var(--warning);"></i> Active Hackathons & Events</h1>
             <p>Discover coding events, build teams, submit your best projects, and win big!</p>
-            <div class="hackathon-filters" style="margin-top: 20px; display: flex; gap: 10px;">
-                <button class="btn btn-primary filter-btn" data-filter="ongoing">Live / Ongoing</button>
-                <button class="btn btn-outline filter-btn" data-filter="upcoming">Upcoming</button>
-                <button class="btn btn-outline filter-btn" data-filter="completed">Concluded</button>
+            <div style="display: flex; align-items: center; gap: 15px; margin-top: 20px; flex-wrap: wrap;">
+                <div class="hackathon-filters" style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary filter-btn" data-filter="ongoing">Live / Ongoing</button>
+                    <button class="btn btn-outline filter-btn" data-filter="upcoming">Upcoming</button>
+                    <button class="btn btn-outline filter-btn" data-filter="completed">Concluded</button>
+                </div>
+                <button class="btn btn-outline" onclick="window.openJoinTeamModal()" style="border-color: var(--primary-blue); color: var(--primary-blue);">
+                    <i class="fa-solid fa-user-plus" style="margin-right: 6px;"></i>Join Team by Code
+                </button>
             </div>
         </div>
 

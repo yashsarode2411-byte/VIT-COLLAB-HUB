@@ -1,6 +1,13 @@
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { collection, query, onSnapshot, addDoc, serverTimestamp, getDoc, doc, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { collection, query, onSnapshot, addDoc, serverTimestamp, getDoc, doc, where, getDocs, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+function generateHackCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 6; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+    return code;
+}
 
 const hackathonsContainer = document.getElementById('hackathons-container');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -305,14 +312,17 @@ joinForm.addEventListener('submit', async (e) => {
     });
 
     try {
+        const inviteCode = generateHackCode();
         const docRef = await addDoc(collection(db, "hackathon_applications"), {
             hackathon_id: hackId,
             club_id: clubId,
             applicant_uid: auth.currentUser.uid,
+            team_members: [auth.currentUser.uid],
             team_name: teamName,
             leader_reg: leaderReg,
             members: membersList,
             ppt_name: pptName,
+            invite_code: inviteCode,
             status: "pending", 
             current_round: 0,
             submitted_at: serverTimestamp()
@@ -321,7 +331,7 @@ joinForm.addEventListener('submit', async (e) => {
         // Update local cache immediately
         myApplications[hackId] = { status: 'pending', appId: docRef.id, team_name: teamName };
         
-        alert("Application submitted successfully! The club will review it shortly.");
+        alert(`Application submitted successfully!\n\nYour Team Invite Code: ${inviteCode}\nShare this code with teammates so they can join your team.`);
         closeModal();
         renderHackathons(); // Re-render to update button states
         
@@ -339,3 +349,58 @@ logoutBtn.addEventListener('click', () => {
         window.location.href = "login.html";
     });
 });
+
+// ─── Join Hackathon Team by Invite Code ───
+window.openJoinTeamModal = () => {
+    const code = prompt("Enter the 6-digit Team Invite Code:");
+    if (!code || code.trim().length !== 6) {
+        if (code !== null) alert("Please enter a valid 6-character invite code.");
+        return;
+    }
+    joinTeamByCode(code.trim().toUpperCase());
+};
+
+async function joinTeamByCode(code) {
+    try {
+        const q = query(collection(db, "hackathon_applications"), where("invite_code", "==", code));
+        const snap = await getDocs(q);
+        
+        if (snap.empty) {
+            alert("No team found with this invite code. Please check and try again.");
+            return;
+        }
+        
+        const teamDoc = snap.docs[0];
+        const teamData = teamDoc.data();
+        const uid = auth.currentUser.uid;
+        
+        // Check if already in this team
+        if (teamData.team_members && teamData.team_members.includes(uid)) {
+            alert("You are already a member of this team!");
+            return;
+        }
+        
+        // Check if already applied to this hackathon with another team
+        if (myApplications[teamData.hackathon_id]) {
+            alert("You have already applied to this hackathon with a different team. You cannot join another team.");
+            return;
+        }
+        
+        if (!confirm(`Join team "${teamData.team_name}" for this hackathon?`)) return;
+        
+        // Add user to the team
+        await updateDoc(doc(db, "hackathon_applications", teamDoc.id), {
+            team_members: arrayUnion(uid)
+        });
+        
+        // Update local cache
+        myApplications[teamData.hackathon_id] = { status: teamData.status, appId: teamDoc.id, team_name: teamData.team_name };
+        
+        alert(`Successfully joined team "${teamData.team_name}"!`);
+        renderHackathons();
+        
+    } catch (e) {
+        console.error("Join team error:", e);
+        alert("Failed to join team. Please try again.");
+    }
+}

@@ -98,13 +98,15 @@ onAuthStateChanged(auth, async (user) => {
         const appSnap = await getDocs(appQuery);
 
         if (appSnap.empty) {
-            alert("You don't have an approved application for this hackathon.");
+            alert("You don't have an application for this hackathon.");
             window.location.href = "student-hackathons.html";
             return;
         }
 
         currentAppId = appSnap.docs[0].id;
         currentAppData = appSnap.docs[0].data();
+
+        console.log("Hackathon workspace booted. appId:", currentAppId);
 
         // Listen to hackathon doc for real-time updates
         onSnapshot(doc(db, "hackathons", hackathonId), (docSnap) => {
@@ -128,10 +130,10 @@ onAuthStateChanged(auth, async (user) => {
             }
         });
 
-        // Initialize features
-        loadTasks();
-        loadSubmissions();
-        loadChat();
+        // Initialize features — these all use currentAppId which is now set
+        initTasks();
+        initSubmissions();
+        initChat();
         loadAnnouncements();
 
     } catch (err) {
@@ -161,9 +163,12 @@ function renderOverview() {
     const teamContainer = document.getElementById('team-info-container');
     const members = app.members || [];
     let membersHtml = `
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
             <strong style="color: var(--primary-blue);">${app.team_name || 'Your Team'}</strong>
             <span style="background: var(--primary-blue); color: white; font-size: 11px; padding: 2px 8px; border-radius: 10px;">Leader: ${app.leader_reg || 'N/A'}</span>
+            ${app.invite_code ? `<span style="background: rgba(16,185,129,0.1); color: #10b981; font-size: 11px; padding: 3px 10px; border-radius: 10px; font-weight: 700; cursor: pointer; border: 1px solid rgba(16,185,129,0.2);" onclick="navigator.clipboard.writeText('${app.invite_code}'); alert('Invite code copied!');" title="Click to copy">
+                <i class="fa-solid fa-copy" style="margin-right: 4px;"></i>Code: ${app.invite_code}
+            </span>` : ''}
         </div>
     `;
     if (members.length > 0) {
@@ -178,14 +183,14 @@ function renderOverview() {
     // Status
     const statusContainer = document.getElementById('status-container');
     const statusMap = {
-        'pending': { text: 'Application Pending', color: '#f59e0b', icon: 'fa-hourglass-half' },
-        'approved': { text: 'Approved — Active', color: 'var(--success-msg)', icon: 'fa-check-circle' },
-        'rejected': { text: 'Application Rejected', color: 'var(--danger-msg)', icon: 'fa-times-circle' },
-        'eliminated': { text: 'Eliminated', color: 'var(--danger-msg)', icon: 'fa-ban' }
+        'pending': { text: 'Application Pending', color: '#f59e0b', icon: 'fa-hourglass-half', rgb: '245,158,11' },
+        'approved': { text: 'Approved — Active', color: '#10b981', icon: 'fa-check-circle', rgb: '16,185,129' },
+        'rejected': { text: 'Application Rejected', color: '#ef4444', icon: 'fa-times-circle', rgb: '239,68,68' },
+        'eliminated': { text: 'Eliminated', color: '#ef4444', icon: 'fa-ban', rgb: '239,68,68' }
     };
-    const s = statusMap[app.status] || { text: app.status, color: 'var(--muted-text)', icon: 'fa-question-circle' };
+    const s = statusMap[app.status] || { text: app.status, color: '#6c757d', icon: 'fa-question-circle', rgb: '108,117,125' };
     statusContainer.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 12px; padding: 15px; background: rgba(${s.color === 'var(--success-msg)' ? '16,185,129' : s.color === 'var(--danger-msg)' ? '239,68,68' : '245,158,11'}, 0.08); border-radius: 10px; border: 1px solid rgba(${s.color === 'var(--success-msg)' ? '16,185,129' : s.color === 'var(--danger-msg)' ? '239,68,68' : '245,158,11'}, 0.2);">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 15px; background: rgba(${s.rgb}, 0.08); border-radius: 10px; border: 1px solid rgba(${s.rgb}, 0.2);">
             <i class="fa-solid ${s.icon}" style="font-size: 1.5rem; color: ${s.color};"></i>
             <div>
                 <p style="font-weight: 700; font-size: 15px; color: ${s.color};">${s.text}</p>
@@ -196,7 +201,8 @@ function renderOverview() {
 }
 
 // ─── TASKS (Kanban) ───
-function loadTasks() {
+function initTasks() {
+    // Load tasks with real-time listener
     const tasksRef = collection(db, "hackathon_applications", currentAppId, "tasks");
     onSnapshot(tasksRef, (snapshot) => {
         const tasks = { todo: [], progress: [], done: [] };
@@ -207,6 +213,49 @@ function loadTasks() {
             else tasks.todo.push(t);
         });
         renderKanban(tasks);
+    }, (error) => {
+        console.error("Tasks listener error:", error);
+        document.getElementById('col-todo').innerHTML = '<p class="kanban-empty">Could not load tasks</p>';
+    });
+
+    // Add Task button
+    document.getElementById('add-task-btn').addEventListener('click', () => {
+        const form = document.getElementById('add-task-form');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    });
+    document.getElementById('cancel-task-btn').addEventListener('click', () => {
+        document.getElementById('add-task-form').style.display = 'none';
+    });
+
+    // Save Task
+    document.getElementById('save-task-btn').addEventListener('click', async () => {
+        const title = document.getElementById('task-title-input').value.trim();
+        if (!title) return alert("Task title is required.");
+
+        const btn = document.getElementById('save-task-btn');
+        btn.textContent = "Saving...";
+        btn.disabled = true;
+
+        try {
+            await addDoc(collection(db, "hackathon_applications", currentAppId, "tasks"), {
+                title,
+                description: document.getElementById('task-desc-input').value.trim(),
+                assignee: document.getElementById('task-assignee-select').value,
+                priority: document.getElementById('task-priority-select').value,
+                status: 'todo',
+                created_by: currentUserUid,
+                created_at: serverTimestamp()
+            });
+            document.getElementById('task-title-input').value = '';
+            document.getElementById('task-desc-input').value = '';
+            document.getElementById('add-task-form').style.display = 'none';
+        } catch (e) {
+            console.error("Add task error:", e);
+            alert("Failed to add task. Error: " + e.message);
+        } finally {
+            btn.textContent = "Save Task";
+            btn.disabled = false;
+        }
     });
 }
 
@@ -255,7 +304,7 @@ window.moveHackTask = async (taskId, newStatus) => {
         await updateDoc(doc(db, "hackathon_applications", currentAppId, "tasks", taskId), { status: newStatus });
     } catch (e) {
         console.error("Move task error:", e);
-        alert("Failed to update task.");
+        alert("Failed to update task. Error: " + e.message);
     }
 };
 
@@ -265,51 +314,13 @@ window.deleteHackTask = async (taskId) => {
         await deleteDoc(doc(db, "hackathon_applications", currentAppId, "tasks", taskId));
     } catch (e) {
         console.error("Delete task error:", e);
-        alert("Failed to delete task.");
+        alert("Failed to delete task. Error: " + e.message);
     }
 };
 
-// Add Task Form
-document.getElementById('add-task-btn').addEventListener('click', () => {
-    const form = document.getElementById('add-task-form');
-    form.style.display = form.style.display === 'none' ? 'block' : 'none';
-});
-document.getElementById('cancel-task-btn').addEventListener('click', () => {
-    document.getElementById('add-task-form').style.display = 'none';
-});
-
-document.getElementById('save-task-btn').addEventListener('click', async () => {
-    const title = document.getElementById('task-title-input').value.trim();
-    if (!title) return alert("Task title is required.");
-
-    const btn = document.getElementById('save-task-btn');
-    btn.textContent = "Saving...";
-    btn.disabled = true;
-
-    try {
-        await addDoc(collection(db, "hackathon_applications", currentAppId, "tasks"), {
-            title,
-            description: document.getElementById('task-desc-input').value.trim(),
-            assignee: document.getElementById('task-assignee-select').value,
-            priority: document.getElementById('task-priority-select').value,
-            status: 'todo',
-            created_by: currentUserUid,
-            created_at: serverTimestamp()
-        });
-        document.getElementById('task-title-input').value = '';
-        document.getElementById('task-desc-input').value = '';
-        document.getElementById('add-task-form').style.display = 'none';
-    } catch (e) {
-        console.error("Add task error:", e);
-        alert("Failed to add task.");
-    } finally {
-        btn.textContent = "Save Task";
-        btn.disabled = false;
-    }
-});
-
 // ─── SUBMISSIONS ───
-function loadSubmissions() {
+function initSubmissions() {
+    // Load submissions with real-time listener
     const subsRef = collection(db, "hackathon_applications", currentAppId, "submissions");
     onSnapshot(subsRef, (snapshot) => {
         const container = document.getElementById('submissions-list');
@@ -323,7 +334,7 @@ function loadSubmissions() {
         });
 
         if (subs.length === 0) {
-            container.innerHTML = '<div class="card" style="text-align: center; padding: 30px;"><p style="color: var(--muted-text);">No submissions yet.</p></div>';
+            container.innerHTML = '<div class="card" style="text-align: center; padding: 30px;"><p style="color: var(--muted-text);">No submissions yet. Click "New Submission" to submit your work.</p></div>';
             return;
         }
 
@@ -342,50 +353,54 @@ function loadSubmissions() {
                 </div>
             `;
         }).join('');
+    }, (error) => {
+        console.error("Submissions listener error:", error);
+    });
+
+    // Add Submission button
+    document.getElementById('add-submission-btn').addEventListener('click', () => {
+        const form = document.getElementById('add-submission-form');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    });
+    document.getElementById('cancel-submission-btn').addEventListener('click', () => {
+        document.getElementById('add-submission-form').style.display = 'none';
+    });
+
+    // Save Submission
+    document.getElementById('save-submission-btn').addEventListener('click', async () => {
+        const title = document.getElementById('submission-title-input').value.trim();
+        const link = document.getElementById('submission-link-input').value.trim();
+        if (!title || !link) return alert("Title and link are required.");
+
+        const btn = document.getElementById('save-submission-btn');
+        btn.textContent = "Submitting...";
+        btn.disabled = true;
+
+        try {
+            await addDoc(collection(db, "hackathon_applications", currentAppId, "submissions"), {
+                title,
+                link,
+                notes: document.getElementById('submission-notes-input').value.trim(),
+                author_uid: currentUserUid,
+                created_at: serverTimestamp()
+            });
+            document.getElementById('submission-title-input').value = '';
+            document.getElementById('submission-link-input').value = '';
+            document.getElementById('submission-notes-input').value = '';
+            document.getElementById('add-submission-form').style.display = 'none';
+        } catch (e) {
+            console.error("Submit error:", e);
+            alert("Failed to submit. Error: " + e.message);
+        } finally {
+            btn.textContent = "Submit";
+            btn.disabled = false;
+        }
     });
 }
 
-// Add Submission Form
-document.getElementById('add-submission-btn').addEventListener('click', () => {
-    const form = document.getElementById('add-submission-form');
-    form.style.display = form.style.display === 'none' ? 'block' : 'none';
-});
-document.getElementById('cancel-submission-btn').addEventListener('click', () => {
-    document.getElementById('add-submission-form').style.display = 'none';
-});
-
-document.getElementById('save-submission-btn').addEventListener('click', async () => {
-    const title = document.getElementById('submission-title-input').value.trim();
-    const link = document.getElementById('submission-link-input').value.trim();
-    if (!title || !link) return alert("Title and link are required.");
-
-    const btn = document.getElementById('save-submission-btn');
-    btn.textContent = "Submitting...";
-    btn.disabled = true;
-
-    try {
-        await addDoc(collection(db, "hackathon_applications", currentAppId, "submissions"), {
-            title,
-            link,
-            notes: document.getElementById('submission-notes-input').value.trim(),
-            author_uid: currentUserUid,
-            created_at: serverTimestamp()
-        });
-        document.getElementById('submission-title-input').value = '';
-        document.getElementById('submission-link-input').value = '';
-        document.getElementById('submission-notes-input').value = '';
-        document.getElementById('add-submission-form').style.display = 'none';
-    } catch (e) {
-        console.error("Submit error:", e);
-        alert("Failed to submit.");
-    } finally {
-        btn.textContent = "Submit";
-        btn.disabled = false;
-    }
-});
-
 // ─── CHAT ───
-function loadChat() {
+function initChat() {
+    // Load messages with real-time listener
     const messagesRef = collection(db, "hackathon_applications", currentAppId, "messages");
     onSnapshot(messagesRef, (snapshot) => {
         const container = document.getElementById('chat-messages');
@@ -423,6 +438,17 @@ function loadChat() {
             `;
         }).join('');
         scrollChatToBottom();
+    }, (error) => {
+        console.error("Chat listener error:", error);
+    });
+
+    // Send message button
+    document.getElementById('send-chat-btn').addEventListener('click', sendMessage);
+    document.getElementById('chat-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
     });
 }
 
@@ -430,15 +456,6 @@ function scrollChatToBottom() {
     const container = document.getElementById('chat-messages');
     if (container) container.scrollTop = container.scrollHeight;
 }
-
-// Send message
-document.getElementById('send-chat-btn').addEventListener('click', sendMessage);
-document.getElementById('chat-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-    }
-});
 
 async function sendMessage() {
     const input = document.getElementById('chat-input');
@@ -455,7 +472,7 @@ async function sendMessage() {
         });
     } catch (e) {
         console.error("Send message error:", e);
-        alert("Failed to send message.");
+        alert("Failed to send message. Error: " + e.message);
     }
 }
 
@@ -508,12 +525,12 @@ function renderRounds() {
         let bgColor, textColor, icon, label;
         if (isEliminated && i > myRound) {
             bgColor = 'rgba(239,68,68,0.05)';
-            textColor = 'var(--danger-msg)';
+            textColor = '#ef4444';
             icon = 'fa-lock';
             label = 'Locked (Eliminated)';
         } else if (i < myRound) {
             bgColor = 'rgba(16,185,129,0.08)';
-            textColor = 'var(--success-msg)';
+            textColor = '#10b981';
             icon = 'fa-check-circle';
             label = 'Passed ✓';
         } else if (i === myRound) {
